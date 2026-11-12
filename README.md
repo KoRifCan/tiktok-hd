@@ -37,6 +37,14 @@ menampilkan:
 Perkiraan kualitas adalah heuristik, bukan pengukuran kualitas visual. Panel ini
 hanya membaca metadata container; tidak ada file yang dikirim ke server.
 
+## Upload ke TikTok Studio
+
+Setelah proses selesai, tombol **Upload ke TikTok Studio** mengunduh hasil lalu
+membuka halaman upload TikTok Studio di tab baru. Browser tidak mengizinkan
+situs lain mengisi input file TikTok secara programatis, jadi file hasil harus
+diseret atau dipilih manual di tab TikTok Studio. Tidak ada file yang dikirim
+ke server KoRifCan.
+
 ## HDR & Dolby Vision
 
 Opsi **Pertahankan HDR/DV** aktif secara default bila sumbernya HDR/DV, dan

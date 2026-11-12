@@ -1684,6 +1684,49 @@ p {
   margin-bottom: 8px;
 }
 
+.btn-studio {
+  width: 100%;
+  margin-bottom: 8px;
+  border-color: rgba(37, 244, 238, 0.28);
+  background:
+    linear-gradient(115deg, rgba(37, 244, 238, 0.16), transparent 42%),
+    linear-gradient(295deg, rgba(255, 55, 95, 0.18), transparent 42%),
+    #101018;
+  color: #fff;
+  box-shadow: 0 16px 38px -24px rgba(23, 20, 29, 0.7);
+}
+
+.btn-studio .icon {
+  color: #25f4ee;
+}
+
+.btn-studio:hover {
+  transform: translateY(-2px);
+  border-color: rgba(37, 244, 238, 0.5);
+  box-shadow: 0 20px 46px -22px rgba(23, 20, 29, 0.72);
+}
+
+.btn-studio:hover .icon {
+  color: #fff;
+}
+
+.studio-hint {
+  margin: 0 0 12px;
+  padding: 9px 11px;
+  border: 1px solid rgba(37, 244, 238, 0.22);
+  border-radius: 10px;
+  background: rgba(37, 244, 238, 0.055);
+  color: var(--muted);
+  font-size: 0.68rem;
+  line-height: 1.55;
+}
+
+.studio-hint strong {
+  color: var(--text-soft);
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
 .btn-again {
   width: 100%;
   min-height: 44px;
@@ -2703,6 +2746,12 @@ p {
 
   .file-stat {
     padding: 6px 8px;
+  }
+
+  .btn-studio {
+    padding-right: 14px;
+    padding-left: 14px;
+    font-size: 0.84rem;
   }
 }
 

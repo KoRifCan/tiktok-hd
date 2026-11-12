@@ -132,6 +132,8 @@
     hdrToggleNote: $('hdrToggleNote'),
     preview: $('preview'),
     btnDownload: $('btnDownload'),
+    btnStudio: $('btnStudio'),
+    studioFileName: $('studioFileName'),
     btnAgain: $('btnAgain'),
     presetInputs: document.querySelectorAll('input[name="preset"]'),
     presetOptions: document.querySelectorAll('.preset-option'),
@@ -830,6 +832,7 @@
 
     el.btnDownload.href = state.outUrl;
     el.btnDownload.download = name;
+    el.studioFileName.textContent = name;
     el.resultName.textContent = name;
     el.resultSize.textContent = formatBytes(file.size) + ' → ' + formatBytes(blob.size);
     el.resultDuration.textContent = info.duration ? formatDuration(info.duration) : '—';
@@ -1024,6 +1027,15 @@
       clearFile(false);
     });
     el.btnProcess.addEventListener('click', processFile);
+    el.btnStudio.addEventListener('click', function (event) {
+      if (!state.outUrl) {
+        event.preventDefault();
+        return;
+      }
+      // The TikTok Studio tab opens from this link's default action. Download
+      // the result first so the user only has to drag it into that tab.
+      try { el.btnDownload.click(); } catch (err) { /* ignore */ }
+    });
     el.btnAgain.addEventListener('click', resetAll);
     el.btnErrorClose.addEventListener('click', hideError);
 
