@@ -39,11 +39,12 @@ hanya membaca metadata container; tidak ada file yang dikirim ke server.
 
 ## Upload ke TikTok Studio
 
-Setelah proses selesai, tombol **Upload ke TikTok Studio** mengunduh hasil lalu
-membuka halaman upload TikTok Studio di tab baru. Browser tidak mengizinkan
-situs lain mengisi input file TikTok secara programatis, jadi file hasil harus
-diseret atau dipilih manual di tab TikTok Studio. Tidak ada file yang dikirim
-ke server KoRifCan.
+Setelah proses selesai, tombol **Upload ke TikTok Studio** membuka halaman
+upload TikTok Studio di tab baru. Unduh hasil lewat tombol **Unduh video**
+terlebih dahulu, lalu seret atau pilih file hasil unduhan di tab TikTok Studio.
+Browser tidak mengizinkan situs lain mengisi input file TikTok secara
+programatis, jadi file tidak bisa dikirim langsung dari halaman ini. Tidak ada
+file yang dikirim ke server KoRifCan.
 
 ## HDR & Dolby Vision
 
