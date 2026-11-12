@@ -46,6 +46,12 @@ memerlukan decode + encode ulang dan tetap tidak bisa disintesis hanya dari
 slider eksposur. Karena itu KoRifCan memilih passthrough yang jujur, bukan label
 HDR palsu.
 
+Konversi SDR→HDR juga tidak ditawarkan di browser: selain butuh encode ulang
+10-bit, core ffmpeg.wasm yang dipakai situs ini tidak menyelesaikan encode x265
+dengan baik (bahkan satu frame 64×64 gagal dalam pengujian), dan encoder wasm
+tanpa SIMD/threads tidak layak untuk video 1080p. Konversi nyata harus memakai
+encoder desktop/server plus tooling metadata HDR10+/Dolby Vision.
+
 Contoh hasil pada sumber Dolby Vision Profile 8.1 + HDR10+:
 
 - 1.627/1.627 sampel video identik dengan sumber.
