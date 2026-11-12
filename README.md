@@ -21,6 +21,22 @@ Video **tidak pernah di-encode ulang**. Patcher hanya membangun ulang container 
    - menulis metadata mdta KoRifCan.
 5. Hasil diunduh sebagai file MP4 baru. File asli tidak disentuh.
 
+## Info video
+
+Setelah file dipilih, panel info membaca container MP4 secara lokal dan
+menampilkan:
+
+- resolusi tampilan (sudut rotasi diperhitungkan),
+- frame rate rata-rata (CFR/VFR),
+- durasi, codec dan profile, bit depth serta chroma subsampling,
+- primaries/transfer warna (misalnya BT.2020 PQ),
+- bitrate video, bitrate total, dan perkiraan kualitas dari bitrate per piksel
+  per frame (bpp),
+- codec audio, sample rate, jumlah kanal, dan jumlah trek audio.
+
+Perkiraan kualitas adalah heuristik, bukan pengukuran kualitas visual. Panel ini
+hanya membaca metadata container; tidak ada file yang dikirim ke server.
+
 ## HDR & Dolby Vision
 
 Opsi **Pertahankan HDR/DV** aktif secara default bila sumbernya HDR/DV, dan

@@ -274,17 +274,61 @@
             </div>
 
             <div class="file-card" id="fileCard" hidden>
-              <span class="file-icon"><svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg></span>
-              <span class="file-copy">
-                <span class="file-name" id="fileName">video.mp4</span>
-                <span class="file-meta" id="fileMeta">—</span>
-              </span>
-              <span class="file-actions">
-                <button class="mini-btn" type="button" id="btnChange">Ganti</button>
-                <button class="icon-btn" type="button" id="btnRemove" aria-label="Hapus video">
-                  <svg class="icon" aria-hidden="true"><use href="#icon-x"></use></svg>
-                </button>
-              </span>
+              <div class="file-row">
+                <span class="file-icon"><svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg></span>
+                <span class="file-copy">
+                  <span class="file-name" id="fileName">video.mp4</span>
+                  <span class="file-meta" id="fileMeta">—</span>
+                </span>
+                <span class="file-actions">
+                  <button class="mini-btn" type="button" id="btnChange">Ganti</button>
+                  <button class="icon-btn" type="button" id="btnRemove" aria-label="Hapus video">
+                    <svg class="icon" aria-hidden="true"><use href="#icon-x"></use></svg>
+                  </button>
+                </span>
+              </div>
+              <dl class="file-details" id="fileDetails" aria-label="Informasi video" hidden>
+                <div class="file-stat">
+                  <dt>Resolusi</dt>
+                  <dd id="infoResolution">—</dd>
+                </div>
+                <div class="file-stat">
+                  <dt>Frame rate</dt>
+                  <dd id="infoFps">—</dd>
+                </div>
+                <div class="file-stat">
+                  <dt>Durasi</dt>
+                  <dd id="infoDuration">—</dd>
+                </div>
+                <div class="file-stat">
+                  <dt>Codec</dt>
+                  <dd id="infoCodec">—</dd>
+                </div>
+                <div class="file-stat">
+                  <dt>Bit depth</dt>
+                  <dd id="infoBitDepth">—</dd>
+                </div>
+                <div class="file-stat">
+                  <dt>Warna</dt>
+                  <dd id="infoColor">—</dd>
+                </div>
+                <div class="file-stat">
+                  <dt>Bitrate video</dt>
+                  <dd id="infoBitrate">—</dd>
+                </div>
+                <div class="file-stat">
+                  <dt>Bitrate total</dt>
+                  <dd id="infoTotalBitrate">—</dd>
+                </div>
+                <div class="file-stat">
+                  <dt>Kualitas</dt>
+                  <dd><span id="infoQuality">—</span><small class="file-stat-note" id="infoQualityNote"></small></dd>
+                </div>
+                <div class="file-stat">
+                  <dt>Audio</dt>
+                  <dd id="infoAudio">—</dd>
+                </div>
+              </dl>
             </div>
 
             <div class="process-row">

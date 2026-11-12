@@ -66,6 +66,7 @@
   var state = {
     file: null,
     fileMeta: null,
+    videoInfo: null,
     preset: 'best',
     busy: false,
     phase: '',
@@ -89,6 +90,18 @@
     fileCard: $('fileCard'),
     fileName: $('fileName'),
     fileMeta: $('fileMeta'),
+    fileDetails: $('fileDetails'),
+    infoResolution: $('infoResolution'),
+    infoFps: $('infoFps'),
+    infoDuration: $('infoDuration'),
+    infoCodec: $('infoCodec'),
+    infoBitDepth: $('infoBitDepth'),
+    infoColor: $('infoColor'),
+    infoBitrate: $('infoBitrate'),
+    infoTotalBitrate: $('infoTotalBitrate'),
+    infoQuality: $('infoQuality'),
+    infoQualityNote: $('infoQualityNote'),
+    infoAudio: $('infoAudio'),
     btnChange: $('btnChange'),
     btnRemove: $('btnRemove'),
     btnProcess: $('btnProcess'),
@@ -164,6 +177,153 @@
     return m + ':' + String(s).padStart(2, '0');
   }
 
+  function formatBitrate(bps) {
+    bps = Number(bps) || 0;
+    if (!bps) return '—';
+    if (bps >= 995000) {
+      return (bps / 1000000).toLocaleString('id-ID', { maximumFractionDigits: 1 }) + ' Mbps';
+    }
+    return Math.round(bps / 1000).toLocaleString('id-ID') + ' kbps';
+  }
+
+  function formatFps(info) {
+    var fps = Number(info && info.fps) || 0;
+    if (!fps) return '—';
+    var digits = Math.abs(fps - Math.round(fps)) < 0.02 ? 0 : 2;
+    var text = fps.toLocaleString('id-ID', { maximumFractionDigits: digits });
+    return (info.fpsMode === 'vfr' ? '~' : '') + text + ' fps';
+  }
+
+  function containerLabel(file) {
+    var match = /\.([a-z0-9]+)$/i.exec((file && file.name) || '');
+    var ext = match ? match[1].toUpperCase() : 'MP4';
+    if (ext === 'MOV' || ext === 'M4V') return ext;
+    return 'MP4';
+  }
+
+  function codecLabel(info) {
+    var video = (info && info.video) || {};
+    var type = video.codec || '';
+    var profile = '';
+    if (type === 'hev1' || type === 'hvc1') {
+      profile = video.profileIdc === 2 ? 'Main 10'
+        : video.profileIdc === 1 ? 'Main'
+        : video.profileIdc === 3 ? 'Main Still'
+        : video.profileIdc === 4 ? 'RExt' : '';
+      return 'HEVC' + (profile ? ' ' + profile : '');
+    }
+    if (type === 'avc1' || type === 'avc3') {
+      profile = video.profileIdc === 66 ? 'Baseline'
+        : video.profileIdc === 77 ? 'Main'
+        : video.profileIdc === 88 ? 'Extended'
+        : video.profileIdc === 100 ? 'High'
+        : video.profileIdc === 110 ? 'High 10'
+        : video.profileIdc === 122 ? 'High 4:2:2'
+        : video.profileIdc === 244 ? 'High 4:4:4' : '';
+      return 'H.264' + (profile ? ' ' + profile : '');
+    }
+    if (type === 'av01') return 'AV1';
+    if (type === 'vp09') return 'VP9';
+    if (type === 'mp4v') return 'MPEG-4';
+    return type ? type.toUpperCase() : '—';
+  }
+
+  function colorLabel(color) {
+    if (!color) return 'Tidak ditandai';
+    var primaries = {
+      1: 'BT.709', 4: 'BT.470M', 5: 'BT.601 PAL', 6: 'BT.601 NTSC',
+      7: 'SMPTE 240M', 8: 'Film', 9: 'BT.2020', 10: 'BT.2020',
+      11: 'SMPTE 428', 12: 'Display P3', 22: 'EBU 3213'
+    }[color.primaries] || ('Primer ' + color.primaries);
+    var transfer = {
+      1: 'SDR', 4: 'Gamma 2.2', 5: 'Gamma 2.8', 6: 'SDR', 7: 'SMPTE 240M',
+      8: 'Linear', 9: 'Log100', 10: 'Log316', 11: 'xvYCC', 12: 'BT.1361',
+      13: 'sRGB', 14: 'BT.2020 10-bit', 15: 'BT.2020 12-bit',
+      16: 'PQ', 17: 'SMPTE 428', 18: 'HLG'
+    }[color.transfer] || ('Transfer ' + color.transfer);
+    return primaries + ' · ' + transfer;
+  }
+
+  function channelLabel(channels) {
+    if (channels === 1) return 'mono';
+    if (channels === 2) return 'stereo';
+    return channels + ' kanal';
+  }
+
+  function audioLabel(audio) {
+    if (!audio || !audio.codec) return 'Tidak ada audio';
+    var names = {
+      mp4a: 'AAC', alac: 'ALAC', 'ac-3': 'AC-3', 'ec-3': 'E-AC-3',
+      Opus: 'Opus', fLaC: 'FLAC', lpcm: 'PCM', samr: 'AMR'
+    };
+    var parts = [names[audio.codec] || audio.codec.toUpperCase()];
+    if (audio.sampleRate) {
+      parts.push(audio.sampleRate >= 1000
+        ? (audio.sampleRate / 1000).toLocaleString('id-ID', { maximumFractionDigits: 1 }) + ' kHz'
+        : audio.sampleRate.toLocaleString('id-ID') + ' Hz');
+    }
+    if (audio.channels) parts.push(channelLabel(audio.channels));
+    var text = parts.join(' · ');
+    if (audio.trackCount > 1) text += ' · ' + audio.trackCount + ' trek';
+    return text;
+  }
+
+  function qualityLabel(info) {
+    var video = (info && info.video) || {};
+    var width = Number(info && info.width) || 0;
+    var height = Number(info && info.height) || 0;
+    var fps = Number(info && info.fps) || 0;
+    var bitrate = Number(video.bitrate) || 0;
+    if (!width || !height || !fps || !bitrate) return { label: '—', note: '' };
+    var bpp = bitrate / (width * height * fps);
+    var label = bpp >= 0.15 ? 'Sangat tinggi'
+      : bpp >= 0.08 ? 'Tinggi'
+      : bpp >= 0.04 ? 'Sedang'
+      : bpp >= 0.02 ? 'Hemat'
+      : 'Sangat hemat';
+    return {
+      label: label,
+      note: bpp.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 3 }) + ' bpp · estimasi'
+    };
+  }
+
+  function updateFileMeta(file) {
+    var parts = [formatBytes(file.size), containerLabel(file)];
+    var info = state.videoInfo;
+    if (info && info.found) {
+      if (info.width && info.height) parts.push(info.width + ' × ' + info.height);
+      if (info.duration) parts.push(formatDuration(info.duration));
+    } else if (state.fileMeta) {
+      if (state.fileMeta.width && state.fileMeta.height) parts.push(state.fileMeta.width + ' × ' + state.fileMeta.height);
+      if (state.fileMeta.duration) parts.push(formatDuration(state.fileMeta.duration));
+    }
+    el.fileMeta.textContent = parts.join(' · ');
+  }
+
+  function renderVideoInfo(file, info) {
+    if (!info || !info.found) {
+      el.fileDetails.hidden = true;
+      return;
+    }
+    var video = info.video || {};
+    el.infoResolution.textContent = info.width && info.height ? info.width + ' × ' + info.height : '—';
+    el.infoFps.textContent = formatFps(info);
+    el.infoDuration.textContent = info.duration ? formatDuration(info.duration) : '—';
+    el.infoCodec.textContent = codecLabel(info);
+    var depth = video.bitDepth ? video.bitDepth + '-bit' : '—';
+    if (video.chroma) depth += ' · ' + video.chroma;
+    el.infoBitDepth.textContent = depth;
+    el.infoColor.textContent = colorLabel(info.color);
+    el.infoBitrate.textContent = formatBitrate(video.bitrate);
+    el.infoTotalBitrate.textContent = formatBitrate(info.duration ? (file.size * 8) / info.duration : 0);
+    var quality = qualityLabel(info);
+    el.infoQuality.textContent = quality.label;
+    el.infoQualityNote.textContent = quality.note;
+    el.infoQuality.parentElement.title = 'Perkiraan dari bitrate per piksel per frame. Bukan jaminan kualitas visual.';
+    el.infoAudio.textContent = audioLabel(info.audio);
+    el.fileDetails.hidden = false;
+  }
+
   function hdrIsHdr(kind) {
     return kind === 'dolby-vision' || kind === 'hdr10plus' || kind === 'hdr10' || kind === 'hlg';
   }
@@ -231,24 +391,37 @@
     }
   }
 
-  async function probeHdr(file) {
-    if (!window.KoRifCanPatcher || !window.KoRifCanPatcher.inspectHdr) return null;
+  async function probeMedia(file) {
+    var result = { hdr: null, video: null };
+    var patcher = window.KoRifCanPatcher;
+    if (!patcher || (!patcher.inspectHdr && !patcher.inspectVideo)) return result;
     var headSize = Math.min(file.size, 8 * 1024 * 1024);
-    var info = null;
     try {
       var head = new Uint8Array(await file.slice(0, headSize).arrayBuffer());
-      info = window.KoRifCanPatcher.inspectHdr(head, { scanSamples: true, maxSamples: 90 });
-      if ((!info || !info.found) && file.size > headSize) {
+      if (patcher.inspectHdr) {
+        result.hdr = patcher.inspectHdr(head, { scanSamples: true, maxSamples: 90 });
+      }
+      if (patcher.inspectVideo) {
+        result.video = patcher.inspectVideo(head);
+      }
+      var needHdr = !result.hdr || !result.hdr.found;
+      var needVideo = !result.video || !result.video.found;
+      if ((needHdr || needVideo) && file.size > headSize) {
         var tailSize = Math.min(file.size, 8 * 1024 * 1024);
         var tail = new Uint8Array(await file.slice(file.size - tailSize).arrayBuffer());
-        var tailInfo = window.KoRifCanPatcher.inspectHdr(tail, { scanSamples: false });
-        if (tailInfo && tailInfo.found) info = tailInfo;
+        if (needHdr && patcher.inspectHdr) {
+          var tailHdr = patcher.inspectHdr(tail, { scanSamples: false });
+          if (tailHdr && tailHdr.found) result.hdr = tailHdr;
+        }
+        if (needVideo && patcher.inspectVideo) {
+          var tailVideo = patcher.inspectVideo(tail);
+          if (tailVideo && tailVideo.found) result.video = tailVideo;
+        }
       }
     } catch (err) {
-      console.warn('[hdr]', err);
-      info = null;
+      console.warn('[media]', err);
     }
-    return info;
+    return result;
   }
 
   function readStoredPreset() {
@@ -462,6 +635,7 @@
 
     state.file = file;
     state.fileMeta = null;
+    state.videoInfo = null;
     state.hdrInfo = null;
     var token = ++state.probeToken;
     var hdrToken = ++state.hdrProbeToken;
@@ -471,6 +645,7 @@
     el.progressPanel.hidden = true;
     el.fileName.textContent = file.name;
     el.fileMeta.textContent = formatBytes(file.size) + ' · membaca metadata…';
+    el.fileDetails.hidden = true;
     el.fileCard.hidden = false;
     el.btnProcess.disabled = false;
     updateHdrUi(null, true);
@@ -479,16 +654,16 @@
     probeVideo(file).then(function (meta) {
       if (state.file !== file || state.probeToken !== token) return;
       state.fileMeta = meta;
-      var parts = [formatBytes(file.size)];
-      if (meta.width && meta.height) parts.push(meta.width + ' × ' + meta.height);
-      if (meta.duration) parts.push(formatDuration(meta.duration));
-      el.fileMeta.textContent = parts.join(' · ');
+      updateFileMeta(file);
     });
 
-    probeHdr(file).then(function (info) {
+    probeMedia(file).then(function (result) {
       if (state.file !== file || state.hdrProbeToken !== hdrToken) return;
-      state.hdrInfo = info;
-      updateHdrUi(info);
+      state.hdrInfo = result.hdr;
+      state.videoInfo = result.video;
+      updateHdrUi(result.hdr);
+      renderVideoInfo(file, result.video);
+      updateFileMeta(file);
     });
   }
 
@@ -496,11 +671,13 @@
     if (state.busy) return;
     state.file = null;
     state.fileMeta = null;
+    state.videoInfo = null;
     state.hdrInfo = null;
     state.probeToken++;
     state.hdrProbeToken++;
     el.fileInput.value = '';
     el.fileCard.hidden = true;
+    el.fileDetails.hidden = true;
     el.btnProcess.disabled = true;
     el.progressPanel.hidden = true;
     hideError();

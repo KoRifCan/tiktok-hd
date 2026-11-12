@@ -438,6 +438,11 @@
     var out = {
       type: fourcc(entry, 4),
       kids: kids,
+      width: entry.length >= 36 ? u16(entry, 32) : 0,
+      height: entry.length >= 36 ? u16(entry, 34) : 0,
+      profileIdc: 0,
+      levelIdc: 0,
+      chroma: '',
       colr: null,
       dv: null,
       staticBoxes: {},
@@ -449,8 +454,37 @@
       var p = kid.pos + kid.hdr;
       if (kid.type === 'hvcC') {
         if (p + 22 <= entry.length) {
+          out.profileIdc = entry[p + 1] & 0x1f;
+          out.levelIdc = entry[p + 12];
+          out.chroma = ['', '4:2:0', '4:2:2', '4:4:4'][entry[p + 16] & 3] || '';
           out.bitDepth = (entry[p + 17] & 7) + 8;
           out.nalLength = (entry[p + 21] & 3) + 1;
+        }
+      } else if (kid.type === 'avcC') {
+        if (p + 4 <= entry.length) {
+          out.profileIdc = entry[p + 1];
+          out.levelIdc = entry[p + 3];
+          out.bitDepth = out.profileIdc === 110 ? 10 : 8;
+          out.chroma = '4:2:0';
+        }
+      } else if (kid.type === 'av1C') {
+        if (p + 3 <= entry.length) {
+          out.profileIdc = entry[p + 1] >> 5;
+          out.levelIdc = entry[p + 1] & 0x1f;
+          var high = (entry[p + 2] >> 6) & 1;
+          var twelve = (entry[p + 2] >> 5) & 1;
+          var mono = (entry[p + 2] >> 4) & 1;
+          var subX = (entry[p + 2] >> 3) & 1;
+          var subY = (entry[p + 2] >> 2) & 1;
+          out.bitDepth = twelve ? 12 : (high ? 10 : 8);
+          out.chroma = mono ? '4:0:0' : (subX && subY ? '4:2:0' : (subX ? '4:2:2' : '4:4:4'));
+        }
+      } else if (kid.type === 'vpcC') {
+        if (p + 7 <= entry.length) {
+          out.profileIdc = entry[p + 4];
+          out.levelIdc = entry[p + 5];
+          out.bitDepth = entry[p + 6] >> 4;
+          out.chroma = ['4:2:0', '4:2:2', '4:4:4'][(entry[p + 6] >> 1) & 3] || '';
         }
       } else if (kid.type === 'colr') {
         if (p + 4 > entry.length) continue;
@@ -641,6 +675,147 @@
       color: color,
       hasDby1: hasDby1,
       videoSamples: video.sizes ? video.sizes.length : 0
+    };
+  }
+
+  function getTkhdDimensions(b, tkhd) {
+    var p = tkhd.pos + tkhd.hdr;
+    var off = b[p] === 0 ? 76 : 88;
+    if (p + off + 8 > tkhd.pos + tkhd.size) return { width: 0, height: 0 };
+    return {
+      width: Math.round(u32(b, p + off) / 65536),
+      height: Math.round(u32(b, p + off + 4) / 65536)
+    };
+  }
+
+  function getRotation(b, tkhd) {
+    var p = tkhd.pos + tkhd.hdr;
+    var off = b[p] === 0 ? 40 : 52;
+    if (p + off + 20 > tkhd.pos + tkhd.size) return 0;
+    var a = i32(b, p + off) / 65536;
+    var bval = i32(b, p + off + 4) / 65536;
+    if (Math.abs(a) < 0.01 && bval > 0.5) return 90;
+    if (a < -0.5) return 180;
+    if (Math.abs(a) < 0.01 && bval < -0.5) return 270;
+    return 0;
+  }
+
+  function readAudioEntryInfo(entry) {
+    var out = { type: fourcc(entry, 4), sampleRate: 0, channels: 0, bitDepth: 0 };
+    if (entry.length < 36) return out;
+    out.channels = u16(entry, 24);
+    out.bitDepth = u16(entry, 26);
+    var sr = u32(entry, 32) / 65536;
+    if (sr >= 4000 && sr <= 384000) out.sampleRate = Math.round(sr);
+    return out;
+  }
+
+  function sumSizes(sizes) {
+    var total = 0;
+    if (!sizes) return 0;
+    for (var i = 0; i < sizes.length; i++) total += sizes[i];
+    return total;
+  }
+
+  function inspectVideo(input, options) {
+    options = options || {};
+    var original = input instanceof Uint8Array ? input : new Uint8Array(input);
+    var b = original;
+    var top = parseBoxes(b, 0, b.length);
+    var moov = findBox(top, 'moov');
+    if (!moov) {
+      var moovOffset = findMoovOffset(b);
+      if (moovOffset < 0) return { found: false };
+      b = b.subarray(moovOffset);
+      top = parseBoxes(b, 0, b.length);
+      moov = findBox(top, 'moov');
+    }
+    if (!moov) return { found: false };
+
+    var moovKids = childBoxes(b, moov);
+    var mvhd = findBox(moovKids, 'mvhd');
+    var movieDuration = 0;
+    if (mvhd && getTimescale(b, mvhd)) {
+      movieDuration = getDuration(b, mvhd) / getTimescale(b, mvhd);
+    }
+
+    var video = null;
+    var audioTracks = [];
+    for (var t = 0; t < moovKids.length; t++) {
+      if (moovKids[t].type !== 'trak') continue;
+      var tr;
+      try { tr = parseTrak(b, moovKids[t]); } catch (err) { continue; }
+      if (tr.handler === 'vide' && !video) video = tr;
+      else if (tr.handler === 'soun') audioTracks.push(tr);
+    }
+    if (!video || !video.stsd || !video.stsd.length) {
+      return { found: false, duration: movieDuration };
+    }
+
+    var entryInfo = readEntryInfo(video.stsd[0].bytes);
+    var sampleCount = 0;
+    var totalDelta = 0;
+    var minDelta = 0;
+    var maxDelta = 0;
+    if (video.stts) {
+      for (var i = 0; i < video.stts.length; i++) {
+        var st = video.stts[i];
+        sampleCount += st.count;
+        totalDelta += st.count * st.delta;
+        if (!minDelta || st.delta < minDelta) minDelta = st.delta;
+        if (st.delta > maxDelta) maxDelta = st.delta;
+      }
+    }
+    var fps = totalDelta > 0 && video.timescale ? (sampleCount * video.timescale) / totalDelta : 0;
+    var trackDuration = video.timescale ? video.duration / video.timescale : 0;
+    var duration = movieDuration || trackDuration;
+    var videoBitrate = trackDuration > 0 ? (sumSizes(video.sizes) * 8) / trackDuration : 0;
+
+    var tkhdDims = getTkhdDimensions(b, video.tkhd);
+    var codedWidth = entryInfo.width || tkhdDims.width;
+    var codedHeight = entryInfo.height || tkhdDims.height;
+    var rotation = getRotation(b, video.tkhd);
+    var displayWidth = (rotation === 90 || rotation === 270) ? codedHeight : codedWidth;
+    var displayHeight = (rotation === 90 || rotation === 270) ? codedWidth : codedHeight;
+
+    var audio = null;
+    if (audioTracks.length) {
+      var at = audioTracks[0];
+      var audioEntry = at.stsd && at.stsd.length ? readAudioEntryInfo(at.stsd[0].bytes) : { type: '', sampleRate: 0, channels: 0, bitDepth: 0 };
+      var audioDuration = at.timescale ? at.duration / at.timescale : 0;
+      audio = {
+        codec: audioEntry.type,
+        sampleRate: audioEntry.sampleRate,
+        channels: audioEntry.channels,
+        bitDepth: audioEntry.bitDepth,
+        bitrate: audioDuration > 0 ? (sumSizes(at.sizes) * 8) / audioDuration : 0,
+        trackCount: audioTracks.length
+      };
+    }
+
+    var deltaSpread = maxDelta - minDelta;
+    return {
+      found: true,
+      duration: duration,
+      width: displayWidth,
+      height: displayHeight,
+      codedWidth: codedWidth,
+      codedHeight: codedHeight,
+      rotation: rotation,
+      fps: fps,
+      fpsMode: sampleCount > 1 && deltaSpread > Math.max(2, maxDelta * 0.1) ? 'vfr' : 'cfr',
+      videoSamples: sampleCount || (video.sizes ? video.sizes.length : 0),
+      video: {
+        codec: entryInfo.type,
+        profileIdc: entryInfo.profileIdc,
+        levelIdc: entryInfo.levelIdc,
+        bitDepth: entryInfo.bitDepth,
+        chroma: entryInfo.chroma,
+        bitrate: videoBitrate,
+        duration: trackDuration
+      },
+      audio: audio,
+      color: entryInfo.colr
     };
   }
 
@@ -1327,6 +1502,7 @@
   return {
     patch: patch,
     inspectHdr: inspectHdr,
+    inspectVideo: inspectVideo,
     normalizeForDecode: normalizeForDecode,
     TAIL_HQ_BEST: TAIL_HQ_BEST,
     TAIL_HQ_IPHONE: TAIL_HQ_IPHONE,
