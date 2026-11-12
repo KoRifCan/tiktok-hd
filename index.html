@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>KoRifCan — Siapkan Video TikTok Tanpa Encode Ulang</title>
-  <meta name="description" content="Siapkan video TikTok dengan resep Best Quality atau Best Quality For iPhone. Video tidak di-encode ulang dan seluruh proses berjalan di browser-mu.">
-  <meta name="theme-color" content="#07070a">
+  <meta name="description" content="Siapkan video TikTok dengan resep Best Quality atau Best Quality For iPhone. Video tidak di-encode ulang, HDR/DV asli bisa dipertahankan, dan seluruh proses berjalan di browser-mu.">
+  <meta name="theme-color" content="#f7f4ee">
   <meta property="og:title" content="KoRifCan — Siapkan Video TikTok Tanpa Encode Ulang">
-  <meta property="og:description" content="Upload prep untuk TikTok. Stream video disalin utuh, audio dan container dirapikan, 100% diproses di browser.">
+  <meta property="og:description" content="Upload prep untuk TikTok. Stream video disalin utuh, HDR/DV asli bisa dipertahankan, audio dan container dirapikan, 100% diproses di browser.">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="KoRifCan">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -86,8 +86,10 @@
     </symbol>
   </svg>
 
-  <div class="page-glow page-glow--one" aria-hidden="true"></div>
-  <div class="page-glow page-glow--two" aria-hidden="true"></div>
+  <div class="page-glow-layer" aria-hidden="true">
+    <div class="page-glow page-glow--one"></div>
+    <div class="page-glow page-glow--two"></div>
+  </div>
 
   <header class="site-header">
     <div class="container header-inner">
@@ -124,6 +126,7 @@
           <ul class="hero-facts" aria-label="Keunggulan KoRifCan">
             <li><svg class="icon" aria-hidden="true"><use href="#icon-lock"></use></svg> 100% di perangkat</li>
             <li><svg class="icon" aria-hidden="true"><use href="#icon-waves"></use></svg> Video utuh</li>
+            <li><svg class="icon" aria-hidden="true"><use href="#icon-layers"></use></svg> HDR/DV asli</li>
             <li><svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg> Tanpa akun</li>
           </ul>
         </div>
@@ -214,6 +217,40 @@
                   <span>44,1 + 48 kHz</span><span>128 + 346 kbps</span><span>Dual audio</span>
                 </span>
               </label>
+            </div>
+
+            <div class="hdr-card" id="hdrCard">
+              <div class="hdr-top">
+                <span class="hdr-icon"><svg class="icon" aria-hidden="true"><use href="#icon-layers"></use></svg></span>
+                <div class="hdr-copy">
+                  <h4>HDR &amp; Dolby Vision</h4>
+                  <p id="hdrStatus">Pilih video untuk memeriksa format HDR.</p>
+                </div>
+                <span class="hdr-badge" id="hdrBadge">Belum diperiksa</span>
+              </div>
+              <label class="hdr-toggle is-disabled" id="hdrToggle" for="hdrPreserve">
+                <input type="checkbox" id="hdrPreserve" checked disabled>
+                <span class="hdr-switch" aria-hidden="true"></span>
+                <span class="hdr-toggle-copy">
+                  <strong>Pertahankan HDR/DV</strong>
+                  <small id="hdrToggleNote">Nonaktif — sumber SDR tetap SDR; konversi HDR butuh encode ulang.</small>
+                </span>
+              </label>
+              <details class="hdr-info">
+                <summary>
+                  <span>Kenapa eksposur tidak bisa membuat HDR?</span>
+                  <svg class="icon" aria-hidden="true"><use href="#icon-chevron"></use></svg>
+                </summary>
+                <div class="hdr-info-body">
+                  <p><strong>HDR bukan efek eksposur.</strong> Mengubah eksposur berarti mengubah piksel, jadi video harus di-decode dan di-encode ulang. Itu pun tidak membuat metadata HDR10+ per-scene atau RPU Dolby Vision yang valid.</p>
+                  <ul>
+                    <li><strong>HDR10+</strong> butuh bitstream 10-bit PQ dan metadata dinamis ST 2094-40 yang mengikuti setiap scene.</li>
+                    <li><strong>Dolby Vision</strong> butuh RPU per frame dan tooling berlisensi Dolby; tidak bisa disintesis dari slider eksposur.</li>
+                    <li><strong>Yang bisa dilakukan tanpa re-encode:</strong> mempertahankan HDR/DV yang sudah ada di file sumber. Video SDR tetap SDR.</li>
+                  </ul>
+                  <p>Butuh konversi SDR ke HDR? Itu harus dilakukan dengan encoder 10-bit dan tooling metadata di desktop/server, bukan di situs statis ini.</p>
+                </div>
+              </details>
             </div>
           </div>
 
@@ -307,6 +344,7 @@
                   <div><dt>Durasi</dt><dd id="resultDuration">—</dd></div>
                   <div><dt>Resep</dt><dd id="resultPreset">—</dd></div>
                   <div><dt>Stream video</dt><dd id="resultStream">—</dd></div>
+                  <div><dt>HDR / DV</dt><dd id="resultHdr">—</dd></div>
                 </dl>
                 <p class="result-meta" id="resultMeta">Metadata artist &amp; comment: KoRifCan</p>
                 <a class="btn btn-primary btn-download" id="btnDownload" href="#" download>
@@ -334,7 +372,7 @@
             <span class="feature-number">01</span>
             <span class="feature-icon"><svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg></span>
             <h3>Salin bitstream video</h3>
-            <p>Setiap frame video disalin byte-per-byte. Tidak ada re-encode, tidak ada penurunan bitrate. Penanda Dolby Vision di level container dibersihkan bila ada; data gambarnya tetap utuh.</p>
+            <p>Setiap frame video disalin byte-per-byte. Tidak ada re-encode, tidak ada penurunan bitrate. Penanda HDR/DV asli bisa dipertahankan lewat opsi di Studio tanpa menyentuh sampel video; video SDR tetap SDR.</p>
           </article>
           <article class="feature-card" data-reveal>
             <span class="feature-number">02</span>
@@ -351,7 +389,10 @@
         </div>
         <div class="honesty-note" data-reveal>
           <svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
-          <p><strong>Catatan penting.</strong> TikTok tetap memproses ulang setiap video yang diunggah. Resep ini membantu platform mempertahankan kualitas, tetapi bukan jaminan hasil identik atau distribusi.</p>
+          <div>
+            <p><strong>Catatan penting.</strong> TikTok tetap memproses ulang setiap video yang diunggah. Resep ini membantu platform mempertahankan kualitas, tetapi bukan jaminan hasil identik atau distribusi.</p>
+            <p><strong>Soal HDR.</strong> Video SDR tidak bisa diubah menjadi HDR10+/Dolby Vision hanya dengan eksposur. KoRifCan mempertahankan HDR/DV yang sudah ada di sumber; tidak menambahkan label HDR palsu.</p>
+          </div>
         </div>
       </div>
     </section>
@@ -375,6 +416,7 @@
             </div>
             <ul class="recipe-list">
               <li><span>Video</span><strong>Stream copy 100%</strong></li>
+              <li><span>HDR / DV</span><strong>Opsional · dipertahankan</strong></li>
               <li><span>Audio</span><strong>AAC-LC 48 kHz stereo</strong></li>
               <li><span>Bitrate audio</span><strong>±346 kbps</strong></li>
               <li><span>Struktur audio</span><strong>1 track + clone</strong></li>
@@ -393,6 +435,7 @@
             </div>
             <ul class="recipe-list">
               <li><span>Video</span><strong>Stream copy 100%</strong></li>
+              <li><span>HDR / DV</span><strong>Opsional · dipertahankan</strong></li>
               <li><span>Audio kompatibilitas</span><strong>AAC-LC 44,1 kHz 128 kbps</strong></li>
               <li><span>Audio HQ</span><strong>AAC-LC 48 kHz ±346 kbps</strong></li>
               <li><span>Struktur audio</span><strong>Kompatibilitas + HQ + clone</strong></li>
@@ -416,6 +459,7 @@
                 <li>Satu track audio HQ ditambah satu track clone yang berbagi media data.</li>
                 <li>Movie timescale 1000; video edit list di-reset ke media time 0.</li>
                 <li>Metadata mdta: artist, comment, copyright, te_is_reencode, encoder.</li>
+                <li>HDR/DV opsional: penanda container dan metadata statis sumber dipertahankan tanpa re-encode.</li>
               </ul>
             </div>
             <div class="detail-block">
@@ -426,6 +470,7 @@
                 <li>Track HQ memiliki clone; total tiga track audio di dalam container.</li>
                 <li>Movie timescale 384000; edit list kompatibilitas memakai media time 2112.</li>
                 <li>Metadata mdta yang sama, ditulis untuk seluruh file.</li>
+                <li>HDR/DV opsional: penanda container dan metadata statis sumber dipertahankan tanpa re-encode.</li>
               </ul>
             </div>
           </div>
@@ -480,6 +525,14 @@
           <details class="faq-item">
             <summary><span>Apakah kualitas video dinaikkan?</span><svg class="icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></summary>
             <p>Tidak. Tidak ada peningkatan ajaib. KoRifCan hanya menyiapkan container, audio, dan metadata agar TikTok lebih mudah mempertahankan kualitas. Stream video tetap sama persis dengan file aslimu.</p>
+          </details>
+          <details class="faq-item">
+            <summary><span>Apakah video SDR bisa diubah jadi HDR10+ atau Dolby Vision?</span><svg class="icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></summary>
+            <p>Tidak hanya dengan eksposur. HDR10+ butuh bitstream 10-bit PQ dan metadata dinamis per-scene; Dolby Vision butuh RPU per frame dan tooling berlisensi Dolby. Mengubah eksposur berarti decode + encode ulang, dan tetap tidak menghasilkan metadata HDR yang valid. Karena itu KoRifCan tidak memalsukan HDR. Untuk sumber yang sudah HDR/DV, aktifkan opsi <strong>Pertahankan HDR/DV</strong> agar penandanya tidak hilang.</p>
+          </details>
+          <details class="faq-item">
+            <summary><span>Apakah HDR/DV asli tetap aktif setelah diproses?</span><svg class="icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></summary>
+            <p>Bisa. Aktifkan opsi <strong>Pertahankan HDR/DV</strong> di Studio. Bitstream video tetap disalin byte-per-byte; KoRifCan hanya mengembalikan penanda container dan metadata statis yang biasanya dilepas saat remux. Video SDR tetap SDR.</p>
           </details>
           <details class="faq-item">
             <summary><span>Apa bedanya Best Quality dan Best Quality For iPhone?</span><svg class="icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></summary>

@@ -3,8 +3,9 @@
  * The video bitstream is never re-encoded. This module only rebuilds the
  * MP4 container around the exact samples produced by the ffmpeg stream-copy
  * step:
- *   - keeps every video sample byte-for-byte (and removes only container
- *     level Dolby Vision signalling such as dvvC),
+ *   - keeps every video sample byte-for-byte,
+ *   - optionally restores the source HDR/Dolby Vision container signalling
+ *     (dvvC/dby1, mdcv, clli, colr) without touching those samples,
  *   - rebuilds one or two AAC audio tracks with the KoRifCan silent tails,
  *   - clones the HQ audio track (shared media data, separate trak),
  *   - writes KoRifCan mdta metadata,
@@ -397,8 +398,250 @@
       if (stsc[i].firstChunk <= chunkIndex) chosen = stsc[i];
       else break;
     }
-    if (!chosen) throw new Error('stsc audio tidak valid.');
+    if (!chosen) throw new Error('stsc tidak valid.');
     return chosen.samplesPerChunk;
+  }
+
+  // ---------------------------------------------------------------------
+  // HDR / Dolby Vision inspection
+  // ---------------------------------------------------------------------
+
+  function bytesToHex(a) {
+    var out = '';
+    for (var i = 0; i < a.length; i++) out += a[i].toString(16).padStart(2, '0');
+    return out;
+  }
+
+  function findMoovOffset(b) {
+    // A moov at the end of a file is not the first box in a tail slice.
+    // Search for a plausible moov header and verify it contains mvhd.
+    for (var i = 4; i + 8 <= b.length; i++) {
+      if (b[i] !== 0x6d || b[i + 1] !== 0x6f || b[i + 2] !== 0x6f || b[i + 3] !== 0x76) continue;
+      var start = i - 4;
+      var size = u32(b, start);
+      if (size === 0) size = b.length - start;
+      else if (size === 1) {
+        if (start + 16 > b.length) continue;
+        size = u64(b, start + 8);
+      }
+      if (size < 16 || start + size > b.length) continue;
+      var top = parseBoxes(b, start, start + size);
+      if (!top.length || top[0].type !== 'moov') continue;
+      var kids = childBoxes(b, top[0]);
+      if (findBox(kids, 'mvhd')) return start;
+    }
+    return -1;
+  }
+
+  function readEntryInfo(entry) {
+    var kids = parseBoxes(entry, 86, entry.length);
+    var out = {
+      type: fourcc(entry, 4),
+      kids: kids,
+      colr: null,
+      dv: null,
+      staticBoxes: {},
+      bitDepth: 0,
+      nalLength: 4
+    };
+    for (var i = 0; i < kids.length; i++) {
+      var kid = kids[i];
+      var p = kid.pos + kid.hdr;
+      if (kid.type === 'hvcC') {
+        if (p + 22 <= entry.length) {
+          out.bitDepth = (entry[p + 17] & 7) + 8;
+          out.nalLength = (entry[p + 21] & 3) + 1;
+        }
+      } else if (kid.type === 'colr') {
+        if (p + 4 > entry.length) continue;
+        var colrType = fourcc(entry, p);
+        if ((colrType === 'nclx' || colrType === 'nclc') && p + 11 <= entry.length) {
+          out.colr = {
+            type: colrType,
+            primaries: u16(entry, p + 4),
+            transfer: u16(entry, p + 6),
+            matrix: u16(entry, p + 8),
+            fullRange: colrType === 'nclx' ? (entry[p + 10] >> 7) : 0
+          };
+        }
+      } else if (kid.type === 'dvvC' || kid.type === 'dvcC') {
+        var payload = payloadBytes(entry, kid);
+        if (payload.length >= 5) {
+          out.dv = {
+            type: kid.type,
+            major: payload[0],
+            minor: payload[1],
+            profile: payload[2] >> 1,
+            level: ((payload[2] & 1) << 5) | (payload[3] >> 3),
+            rpu: (payload[3] >> 2) & 1,
+            el: (payload[3] >> 1) & 1,
+            bl: payload[3] & 1,
+            compatibility: payload[4] >> 4,
+            configHex: bytesToHex(payload)
+          };
+        }
+      }
+      if (kid.type === 'colr' || kid.type === 'mdcv' || kid.type === 'clli' ||
+          kid.type === 'pasp' || kid.type === 'clap' || kid.type === 'fiel') {
+        out.staticBoxes[kid.type] = bytesToHex(copyBox(entry, kid));
+      }
+    }
+    return out;
+  }
+
+  function seiHasHdr10Plus(b, start, end) {
+    var p = start;
+    while (p + 2 <= end) {
+      var payloadType = 0;
+      while (p < end && b[p] === 0xff) { payloadType += 255; p++; }
+      if (p >= end) return false;
+      payloadType += b[p++];
+      var payloadSize = 0;
+      while (p < end && b[p] === 0xff) { payloadSize += 255; p++; }
+      if (p >= end) return false;
+      payloadSize += b[p++];
+      if (p + payloadSize > end) return false;
+      if (payloadType === 4 && payloadSize >= 6 &&
+          b[p] === 0xb5 && b[p + 1] === 0x00 && b[p + 2] === 0x3c &&
+          b[p + 3] === 0x00 && b[p + 4] === 0x01 && b[p + 5] === 0x04) {
+        return true;
+      }
+      p += payloadSize;
+    }
+    return false;
+  }
+
+  function scanSampleNals(b, start, size, nalLength, found) {
+    var p = start, end = start + size;
+    while (p + nalLength <= end) {
+      var len = 0;
+      for (var i = 0; i < nalLength; i++) len = (len << 8) | b[p + i];
+      var nalStart = p + nalLength;
+      if (len <= 0 || nalStart + len > end) break;
+      var type = (b[nalStart] >> 1) & 0x3f;
+      if (type === 62) found.dvRpu = true;
+      if ((type === 39 || type === 40) && seiHasHdr10Plus(b, nalStart + 2, nalStart + len)) {
+        found.hdr10plus = true;
+      }
+      p = nalStart + len;
+    }
+  }
+
+  function scanVideoHdr(b, video, entryInfo, options) {
+    var found = { hdr10plus: false, dvRpu: false };
+    if (!video || !video.sizes || !video.chunks || !video.stsc) return found;
+    if (entryInfo.type !== 'hev1' && entryInfo.type !== 'hvc1') return found;
+    var maxSamples = Math.min(options.maxSamples || 240, video.sizes.length);
+    var maxBytes = options.maxBytes || (16 * 1024 * 1024);
+    var bytesRead = 0;
+    var si = 0;
+    for (var ci = 1; ci <= video.chunks.length && si < maxSamples; ci++) {
+      var off = video.chunks[ci - 1];
+      var spc = samplesPerChunk(video.stsc, ci);
+      for (var k = 0; k < spc && si < maxSamples && si < video.sizes.length; k++) {
+        var size = video.sizes[si];
+        if (off >= b.length) return found;
+        if (off + size > b.length) return found;
+        scanSampleNals(b, off, size, entryInfo.nalLength, found);
+        bytesRead += size;
+        off += size;
+        si++;
+        if (bytesRead > maxBytes) return found;
+        if (found.hdr10plus && found.dvRpu) return found;
+      }
+    }
+    return found;
+  }
+
+  function inspectHdr(input, options) {
+    options = options || {};
+    var original = input instanceof Uint8Array ? input : new Uint8Array(input);
+    var b = original;
+    var top = parseBoxes(b, 0, b.length);
+    var moov = findBox(top, 'moov');
+    var hasDby1 = false;
+    var ftyp = findBox(top, 'ftyp');
+    if (ftyp) {
+      var fp = ftyp.pos + ftyp.hdr, fe = ftyp.pos + ftyp.size;
+      while (fp + 4 <= fe) {
+        if (fourcc(b, fp) === 'dby1') { hasDby1 = true; break; }
+        fp += 4;
+      }
+    }
+    if (!moov) {
+      var moovOffset = findMoovOffset(b);
+      if (moovOffset < 0) {
+        return {
+          found: false, kind: 'unknown', codec: '', bitDepth: 0,
+          hdr10plus: false, dvRpu: false, dolbyVision: false, dv: null,
+          staticBoxes: {}, color: null, hasDby1: false
+        };
+      }
+      b = b.subarray(moovOffset);
+      top = parseBoxes(b, 0, b.length);
+      moov = findBox(top, 'moov');
+    }
+    if (!moov) {
+      return {
+        found: false, kind: 'unknown', codec: '', bitDepth: 0,
+        hdr10plus: false, dvRpu: false, dolbyVision: false, dv: null,
+        staticBoxes: {}, color: null, hasDby1: false
+      };
+    }
+
+    var moovKids = childBoxes(b, moov);
+    var video = null;
+    for (var t = 0; t < moovKids.length; t++) {
+      if (moovKids[t].type !== 'trak') continue;
+      var tr;
+      try { tr = parseTrak(b, moovKids[t]); } catch (err) { continue; }
+      if (tr.handler === 'vide') { video = tr; break; }
+    }
+    if (!video || !video.stsd || !video.stsd.length) {
+      return {
+        found: false, kind: 'unknown', codec: '', bitDepth: 0,
+        hdr10plus: false, dvRpu: false, dolbyVision: false, dv: null,
+        staticBoxes: {}, color: null, hasDby1: false
+      };
+    }
+
+    var entryInfo = readEntryInfo(video.stsd[0].bytes);
+    var scan = { hdr10plus: false, dvRpu: false };
+    // Sample offsets from stco are absolute file offsets. Only scan when the
+    // inspected buffer starts at the beginning of that same file.
+    if (options.scanSamples !== false && b === original) {
+      try { scan = scanVideoHdr(b, video, entryInfo, options); } catch (err) { /* detection is best-effort */ }
+    }
+
+    var color = entryInfo.colr;
+    var transfer = color ? color.transfer : 0;
+    // Only container-level DV signalling makes a file recognizable as Dolby
+    // Vision to players. An RPU NAL without dvvC/dby1 is just a residual
+    // bitstream payload (for example after DV signalling was stripped).
+    var dolbyVision = !!(entryInfo.dv || hasDby1);
+    var kind = 'sdr';
+    if (dolbyVision) kind = 'dolby-vision';
+    else if (scan.hdr10plus) kind = 'hdr10plus';
+    else if (transfer === 16) kind = 'hdr10';
+    else if (transfer === 18) kind = 'hlg';
+    else if (!color && (entryInfo.type !== 'hev1' && entryInfo.type !== 'hvc1')) kind = 'sdr';
+    else if (!color && entryInfo.bitDepth <= 8) kind = 'sdr';
+    else if (!color) kind = 'unknown';
+
+    return {
+      found: true,
+      kind: kind,
+      codec: entryInfo.type,
+      bitDepth: entryInfo.bitDepth || 0,
+      hdr10plus: scan.hdr10plus,
+      dvRpu: scan.dvRpu,
+      dolbyVision: dolbyVision,
+      dv: entryInfo.dv,
+      staticBoxes: entryInfo.staticBoxes,
+      color: color,
+      hasDby1: hasDby1,
+      videoSamples: video.sizes ? video.sizes.length : 0
+    };
   }
 
   function expandAudioSamples(info) {
@@ -716,22 +959,71 @@
   // Video track rebuilding
   // ---------------------------------------------------------------------
 
-  function buildVideoStsd(b, info) {
+  function buildVideoStsd(b, info, hdr) {
+    var preserve = !!(hdr && hdr.preserve);
+    var staticBoxes = (hdr && hdr.staticBoxes) || {};
+    var dvConfig = (preserve && hdr && hdr.dvConfigHex) ? hex(hdr.dvConfigHex) : null;
+    var dvType = (hdr && hdr.dvBoxType) || 'dvvC';
     var entries = [];
     for (var e = 0; e < info.stsd.length; e++) {
       var entry = info.stsd[e].bytes;
       var kids = parseBoxes(entry, 86, entry.length);
       var parts = [];
       var changed = false;
+      var sawDv = false;
+      var sawStatic = {};
       for (var i = 0; i < kids.length; i++) {
-        if (kids[i].type === 'dvvC') { changed = true; continue; }
-        parts.push(copyBytes(entry, kids[i].pos, kids[i].pos + kids[i].size));
+        var kid = kids[i];
+        var type = kid.type;
+        if (type === 'dvvC' || type === 'dvcC') {
+          changed = true;
+          if (preserve) {
+            if (dvConfig && !sawDv) {
+              parts.push({ type: dvType, bytes: box(dvType, dvConfig) });
+              sawDv = true;
+            } else if (!dvConfig) {
+              parts.push({ type: type, bytes: copyBytes(entry, kid.pos, kid.pos + kid.size) });
+              sawDv = true;
+            }
+          }
+          continue;
+        }
+        parts.push({ type: type, bytes: copyBytes(entry, kid.pos, kid.pos + kid.size) });
+        if (type === 'colr' || type === 'mdcv' || type === 'clli' ||
+            type === 'pasp' || type === 'clap' || type === 'fiel') {
+          sawStatic[type] = true;
+        }
       }
+
+      if (preserve) {
+        if (dvConfig && !sawDv) {
+          var dvAt = parts.length;
+          for (var d = 0; d < parts.length; d++) {
+            if (parts[d].type === 'hvcC') { dvAt = d + 1; break; }
+          }
+          parts.splice(dvAt, 0, { type: dvType, bytes: box(dvType, dvConfig) });
+          changed = true;
+        }
+        var keep = ['colr', 'mdcv', 'clli', 'pasp', 'clap', 'fiel'];
+        for (var s = 0; s < keep.length; s++) {
+          var key = keep[s];
+          if (!staticBoxes[key] || sawStatic[key]) continue;
+          var addAt = parts.length;
+          for (var q = 0; q < parts.length; q++) {
+            if (parts[q].type === 'btrt') { addAt = q; break; }
+          }
+          parts.splice(addAt, 0, { type: key, bytes: hex(staticBoxes[key]) });
+          changed = true;
+        }
+      }
+
       if (!changed) {
         entries.push(entry);
       } else {
         var head = copyBytes(entry, 0, 86);
-        var body = concat(parts);
+        var bodyParts = [];
+        for (var p = 0; p < parts.length; p++) bodyParts.push(parts[p].bytes);
+        var body = concat(bodyParts);
         var size = head.length + body.length;
         var out = new Uint8Array(size);
         out.set(head, 0);
@@ -743,12 +1035,12 @@
     return buildStsd(entries);
   }
 
-  function buildVideoStbl(b, info, mediaShift) {
+  function buildVideoStbl(b, info, mediaShift, hdr) {
     var parts = [];
     for (var i = 0; i < info.stblKids.length; i++) {
       var kid = info.stblKids[i];
       if (kid.type === 'stsd') {
-        parts.push(buildVideoStsd(b, info));
+        parts.push(buildVideoStsd(b, info, hdr));
       } else if (kid.type === 'stco') {
         var offs = readStco(b, kid, false);
         for (var j = 0; j < offs.length; j++) offs[j] += mediaShift;
@@ -764,30 +1056,30 @@
     return box('stbl', concat(parts));
   }
 
-  function buildVideoMinf(b, info, mediaShift) {
+  function buildVideoMinf(b, info, mediaShift, hdr) {
     var parts = [];
     for (var i = 0; i < info.minfKids.length; i++) {
-      if (info.minfKids[i].type === 'stbl') parts.push(buildVideoStbl(b, info, mediaShift));
+      if (info.minfKids[i].type === 'stbl') parts.push(buildVideoStbl(b, info, mediaShift, hdr));
       else parts.push(copyBox(b, info.minfKids[i]));
     }
     return box('minf', concat(parts));
   }
 
-  function buildVideoMdia(b, info, mediaShift, segmentDuration) {
+  function buildVideoMdia(b, info, mediaShift, segmentDuration, hdr) {
     var parts = [];
     for (var i = 0; i < info.mdiaKids.length; i++) {
       var kid = info.mdiaKids[i];
-      if (kid.type === 'minf') parts.push(buildVideoMinf(b, info, mediaShift));
+      if (kid.type === 'minf') parts.push(buildVideoMinf(b, info, mediaShift, hdr));
       else parts.push(copyBox(b, kid));
     }
     return box('mdia', concat(parts));
   }
 
-  function buildVideoTrak(b, info, mediaShift, segmentDuration) {
+  function buildVideoTrak(b, info, mediaShift, segmentDuration, hdr) {
     var parts = [
       patchTkhd(b, info.tkhd, 1, segmentDuration),
       buildEdts(segmentDuration, 0),
-      buildVideoMdia(b, info, mediaShift, segmentDuration)
+      buildVideoMdia(b, info, mediaShift, segmentDuration, hdr)
     ];
     for (var i = 0; i < info.kids.length; i++) {
       var t = info.kids[i].type;
@@ -954,10 +1246,13 @@
     var oldMdatDataStart = mdat.pos + mdat.hdr;
     var oldMdatPayloadSize = mdat.size - mdat.hdr;
 
+    var preserveHdr = !!(opts.hdr && opts.hdr.preserve);
+    var preserveDv = preserveHdr && !!(opts.hdr.dvConfigHex);
+
     function makeMoov(mediaShift, newTailStart, plansWithOffsets) {
       var parts = [];
       parts.push(patchMvhd(b, mvhd, movieTs, movieDuration, nextTrackId));
-      parts.push(buildVideoTrak(b, video, mediaShift, videoTkhdDuration));
+      parts.push(buildVideoTrak(b, video, mediaShift, videoTkhdDuration, opts.hdr));
       if (compatPlan) {
         parts.push(buildAudioTrak(b, compatPlan, mediaShift, newTailStart + compatTailBaseOffset));
       }
@@ -970,7 +1265,10 @@
     // First pass: size only. All table offsets have fixed width, so a dummy
     // layout produces exactly the same moov size as the real one.
     var dummyMoov = makeMoov(0, 0);
-    var ftyp = box('ftyp', concat([ascii('isom'), u32b(0x200), ascii('isom'), ascii('iso2'), ascii('mp41')]));
+    var ftypBrands = [ascii('isom'), u32b(0x200), ascii('isom')];
+    if (preserveDv) ftypBrands.push(ascii('dby1'));
+    ftypBrands.push(ascii('iso2'), ascii('mp41'));
+    var ftyp = box('ftyp', concat(ftypBrands));
     var free = box('free', new Uint8Array(0));
     var newMdatDataStart = ftyp.length + dummyMoov.length + free.length + 8;
     var mediaShift = newMdatDataStart - oldMdatDataStart;
@@ -1016,12 +1314,19 @@
           samples: p.totalCount,
           tailFrames: p.tail.count
         };
-      })
+      }),
+      hdr: {
+        preserved: preserveHdr,
+        dolbyVision: preserveDv,
+        source: (opts.hdr && opts.hdr.sourceKind) || null,
+        hdr10plus: !!(opts.hdr && opts.hdr.hdr10plus)
+      }
     };
   }
 
   return {
     patch: patch,
+    inspectHdr: inspectHdr,
     normalizeForDecode: normalizeForDecode,
     TAIL_HQ_BEST: TAIL_HQ_BEST,
     TAIL_HQ_IPHONE: TAIL_HQ_IPHONE,

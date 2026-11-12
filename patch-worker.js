@@ -26,7 +26,8 @@ self.onmessage = function (event) {
         movieTimescale: result.movieTimescale,
         movieDuration: result.movieDuration,
         video: result.video,
-        audio: result.audio
+        audio: result.audio,
+        hdr: result.hdr
       }
     }, [out.buffer]);
   } catch (err) {

@@ -74,7 +74,10 @@
     ffmpeg: null,
     loadPromise: null,
     worker: null,
-    outUrl: null
+    outUrl: null,
+    hdrInfo: null,
+    hdrPreserve: true,
+    hdrProbeToken: 0
   };
 
   function $(id) { return document.getElementById(id); }
@@ -107,7 +110,13 @@
     resultDuration: $('resultDuration'),
     resultPreset: $('resultPreset'),
     resultStream: $('resultStream'),
+    resultHdr: $('resultHdr'),
     resultMeta: $('resultMeta'),
+    hdrStatus: $('hdrStatus'),
+    hdrBadge: $('hdrBadge'),
+    hdrToggle: $('hdrToggle'),
+    hdrPreserve: $('hdrPreserve'),
+    hdrToggleNote: $('hdrToggleNote'),
     preview: $('preview'),
     btnDownload: $('btnDownload'),
     btnAgain: $('btnAgain'),
@@ -153,6 +162,93 @@
       return h + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
     }
     return m + ':' + String(s).padStart(2, '0');
+  }
+
+  function hdrIsHdr(kind) {
+    return kind === 'dolby-vision' || kind === 'hdr10plus' || kind === 'hdr10' || kind === 'hlg';
+  }
+
+  function updateHdrUi(info, checking) {
+    if (!el.hdrStatus || !el.hdrBadge || !el.hdrPreserve) return;
+    var found = !!(info && info.found);
+    var isHdr = found && hdrIsHdr(info.kind);
+    var badgeClass = 'hdr-badge';
+    var badge = 'Belum diperiksa';
+    var status = 'Pilih video untuk memeriksa format HDR.';
+
+    if (checking) {
+      badge = 'Memeriksa…';
+      status = 'Membaca metadata HDR dari file…';
+    } else if (!info) {
+      badge = 'Belum diperiksa';
+    } else if (!found) {
+      badge = 'Tidak terbaca';
+      status = 'Struktur MP4 tidak terbaca untuk deteksi HDR. Video tetap bisa diproses sebagai SDR.';
+    } else if (info.kind === 'dolby-vision') {
+      badgeClass += ' is-hdr is-dv';
+      badge = info.hdr10plus ? 'DV + HDR10+' : 'Dolby Vision';
+      var dvExtra = info.dv && info.dv.profile ? ' Profile ' + info.dv.profile : '';
+      status = 'Dolby Vision' + dvExtra + ' terdeteksi.' +
+        (info.hdr10plus ? ' HDR10+ juga ada.' : '') +
+        ' Metadata HDR/DV asli bisa dipertahankan.';
+    } else if (info.kind === 'hdr10plus') {
+      badgeClass += ' is-hdr';
+      badge = 'HDR10+';
+      status = 'HDR10+ terdeteksi. Metadata dinamis per-scene ikut tersalin bersama bitstream.';
+    } else if (info.kind === 'hdr10') {
+      badgeClass += ' is-hdr';
+      badge = 'HDR10';
+      status = 'HDR10 terdeteksi. Metadata statis dipertahankan; HDR10+ tidak bisa dibuat tanpa encode ulang.';
+    } else if (info.kind === 'hlg') {
+      badgeClass += ' is-hdr';
+      badge = 'HLG';
+      status = 'HLG terdeteksi. Sinyal HDR dipertahankan.';
+    } else if (info.kind === 'sdr') {
+      badgeClass += ' is-sdr';
+      badge = 'SDR';
+      status = 'Sumber SDR (BT.709). SDR tidak bisa diubah menjadi HDR10+/Dolby Vision tanpa encode ulang; tidak ada metadata HDR/DV untuk dipertahankan.';
+    } else {
+      badge = 'HDR?';
+      status = 'Format HDR tidak dikenali. Hasil tetap aman sebagai SDR.';
+    }
+
+    el.hdrBadge.className = badgeClass;
+    el.hdrBadge.textContent = badge;
+    el.hdrStatus.textContent = status;
+
+    var enabled = isHdr;
+    el.hdrPreserve.disabled = state.busy || !enabled;
+    el.hdrToggle.classList.toggle('is-disabled', !enabled);
+    el.hdrPreserve.checked = enabled && state.hdrPreserve;
+    if (state.busy) {
+      el.hdrToggleNote.textContent = 'Tunggu proses selesai.';
+    } else if (!enabled) {
+      el.hdrToggleNote.textContent = 'Nonaktif — sumber SDR tetap SDR; konversi HDR butuh encode ulang.';
+    } else if (state.hdrPreserve) {
+      el.hdrToggleNote.textContent = 'Aktif — penanda HDR/DV dan metadata statis disalin ke hasil.';
+    } else {
+      el.hdrToggleNote.textContent = 'Nonaktif — metadata HDR/DV dilepas mengikuti resep lama.';
+    }
+  }
+
+  async function probeHdr(file) {
+    if (!window.KoRifCanPatcher || !window.KoRifCanPatcher.inspectHdr) return null;
+    var headSize = Math.min(file.size, 8 * 1024 * 1024);
+    var info = null;
+    try {
+      var head = new Uint8Array(await file.slice(0, headSize).arrayBuffer());
+      info = window.KoRifCanPatcher.inspectHdr(head, { scanSamples: true, maxSamples: 90 });
+      if ((!info || !info.found) && file.size > headSize) {
+        var tailSize = Math.min(file.size, 8 * 1024 * 1024);
+        var tail = new Uint8Array(await file.slice(file.size - tailSize).arrayBuffer());
+        var tailInfo = window.KoRifCanPatcher.inspectHdr(tail, { scanSamples: false });
+        if (tailInfo && tailInfo.found) info = tailInfo;
+      }
+    } catch (err) {
+      console.warn('[hdr]', err);
+      info = null;
+    }
+    return info;
   }
 
   function readStoredPreset() {
@@ -210,8 +306,10 @@
     el.btnChange.disabled = busy;
     el.btnRemove.disabled = busy;
     el.btnAgain.disabled = busy;
+    if (el.hdrPreserve) el.hdrPreserve.disabled = busy || !hdrIsHdr(state.hdrInfo && state.hdrInfo.kind);
     for (var i = 0; i < el.presetInputs.length; i++) el.presetInputs[i].disabled = busy;
     updateProcessUi();
+    updateHdrUi(state.hdrInfo);
     if (busy) el.processNote.textContent = 'Jangan tutup tab ini selama proses berjalan.';
   }
 
@@ -364,7 +462,9 @@
 
     state.file = file;
     state.fileMeta = null;
+    state.hdrInfo = null;
     var token = ++state.probeToken;
+    var hdrToken = ++state.hdrProbeToken;
 
     clearResult();
     hideError();
@@ -373,6 +473,7 @@
     el.fileMeta.textContent = formatBytes(file.size) + ' · membaca metadata…';
     el.fileCard.hidden = false;
     el.btnProcess.disabled = false;
+    updateHdrUi(null, true);
     updateProcessUi();
 
     probeVideo(file).then(function (meta) {
@@ -383,13 +484,21 @@
       if (meta.duration) parts.push(formatDuration(meta.duration));
       el.fileMeta.textContent = parts.join(' · ');
     });
+
+    probeHdr(file).then(function (info) {
+      if (state.file !== file || state.hdrProbeToken !== hdrToken) return;
+      state.hdrInfo = info;
+      updateHdrUi(info);
+    });
   }
 
   function clearFile(scrollToStudio) {
     if (state.busy) return;
     state.file = null;
     state.fileMeta = null;
+    state.hdrInfo = null;
     state.probeToken++;
+    state.hdrProbeToken++;
     el.fileInput.value = '';
     el.fileCard.hidden = true;
     el.btnProcess.disabled = true;
@@ -397,6 +506,7 @@
     hideError();
     clearResult();
     resetStages();
+    updateHdrUi(null);
     updateProcessUi();
     if (scrollToStudio) {
       try {
@@ -525,6 +635,7 @@
   function showResult(file, data, preset, elapsedMs) {
     var blob = new Blob([data.buffer], { type: 'video/mp4' });
     var info = data.info || {};
+    var hdr = info.hdr || {};
     var name = outputName(file.name, preset);
 
     if (state.outUrl) {
@@ -549,6 +660,14 @@
     el.resultStream.textContent = (info.video && info.video.samples)
       ? info.video.samples.toLocaleString('id-ID') + ' frame · utuh'
       : 'Disalin utuh';
+    if (el.resultHdr) {
+      if (hdr.preserved && hdr.dolbyVision) el.resultHdr.textContent = hdr.hdr10plus ? 'DV + HDR10+ aktif' : 'Dolby Vision aktif';
+      else if (hdr.preserved && hdr.hdr10plus) el.resultHdr.textContent = 'HDR10+ aktif';
+      else if (hdr.preserved && hdr.source === 'hdr10') el.resultHdr.textContent = 'HDR10 aktif';
+      else if (hdr.preserved && hdr.source === 'hlg') el.resultHdr.textContent = 'HLG aktif';
+      else if (hdr.preserved) el.resultHdr.textContent = 'HDR aktif';
+      else el.resultHdr.textContent = 'Tidak aktif';
+    }
     el.resultMeta.textContent = 'artist & comment: KoRifCan · selesai dalam ' + (elapsedMs / 1000).toFixed(1) + ' detik';
 
     el.progressPanel.hidden = true;
@@ -580,7 +699,19 @@
       setStage(0, 'Menghitung sidik jari file…', 6);
       var copyright = await sha256hex(ab);
 
-      setStage(0, 'Memeriksa struktur audio…', 7);
+      setStage(0, 'Memeriksa metadata HDR & Dolby Vision…', 7);
+      var hdrInfo = state.hdrInfo;
+      try {
+        if (window.KoRifCanPatcher && window.KoRifCanPatcher.inspectHdr) {
+          hdrInfo = window.KoRifCanPatcher.inspectHdr(new Uint8Array(ab), { maxSamples: 240 });
+          state.hdrInfo = hdrInfo;
+          updateHdrUi(hdrInfo);
+        }
+      } catch (err) {
+        console.warn('[hdr]', err);
+      }
+
+      setStage(0, 'Memeriksa struktur audio…', 8);
       try {
         if (window.KoRifCanPatcher && window.KoRifCanPatcher.normalizeForDecode) {
           window.KoRifCanPatcher.normalizeForDecode(new Uint8Array(ab));
@@ -617,13 +748,26 @@
       destroyFFmpeg();
 
       setStage(3, 'Menyusun container, audio, dan metadata…', 84);
+      var hdrOpts = {
+        preserve: false,
+        sourceKind: (hdrInfo && hdrInfo.kind) || 'unknown',
+        hdr10plus: !!(hdrInfo && hdrInfo.hdr10plus)
+      };
+      if (state.hdrPreserve && hdrInfo && hdrIsHdr(hdrInfo.kind)) {
+        hdrOpts.preserve = true;
+        hdrOpts.dolbyVision = !!(hdrInfo.dv && hdrInfo.dv.profile);
+        hdrOpts.dvBoxType = hdrInfo.dv ? hdrInfo.dv.type : 'dvvC';
+        hdrOpts.dvConfigHex = hdrInfo.dv ? hdrInfo.dv.configHex : '';
+        hdrOpts.staticBoxes = hdrInfo.staticBoxes || {};
+      }
       var patched = await runPatcher(outBuffer, {
         preset: preset,
         artist: ARTIST,
         comment: COMMENT,
         copyright: copyright,
         teIsReencode: '1',
-        encoder: ENCODER
+        encoder: ENCODER,
+        hdr: hdrOpts
       });
 
       setStage(4, 'Menyiapkan file unduhan…', 97);
@@ -712,6 +856,13 @@
       });
     }
 
+    if (el.hdrPreserve) {
+      el.hdrPreserve.addEventListener('change', function () {
+        state.hdrPreserve = el.hdrPreserve.checked;
+        updateHdrUi(state.hdrInfo);
+      });
+    }
+
     window.addEventListener('beforeunload', function (event) {
       if (!state.busy) return;
       event.preventDefault();
@@ -757,6 +908,7 @@
   function init() {
     bind();
     setPreset(readStoredPreset() || 'best', false);
+    updateHdrUi(null);
     updateProcessUi();
     var year = $('year');
     if (year) year.textContent = String(new Date().getFullYear());

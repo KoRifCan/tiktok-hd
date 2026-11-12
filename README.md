@@ -10,14 +10,48 @@ Video **tidak pernah di-encode ulang**. Patcher hanya membangun ulang container 
 ## Cara kerja
 
 1. Video dibaca ke memori browser.
-2. ffmpeg.wasm melakukan stream copy video dan menyiapkan audio AAC (encode audio saja).
-3. `mp4-patcher.js` menyusun ulang container:
+2. `mp4-patcher.js` memeriksa sinyal HDR/DV di sumber (Dolby Vision `dvvC`/`dvcC`, brand `dby1`, RPU NAL type 62, SEI HDR10+, dan `colr` PQ/HLG).
+3. ffmpeg.wasm melakukan stream copy video dan menyiapkan audio AAC (encode audio saja).
+4. `mp4-patcher.js` menyusun ulang container:
    - mempertahankan setiap sampel video byte-per-byte,
-   - menghapus penanda Dolby Vision level container (`dvvC`) bila ada,
+   - menghapus penanda Dolby Vision level container (`dvvC`) bila opsi HDR/DV tidak aktif,
+   - mengembalikan `dvvC`/`dvcC`, brand `dby1`, serta metadata statis (`colr`, `mdcv`, `clli`, `pasp`, `clap`, `fiel`) bila opsi HDR/DV aktif,
    - menulis tabel sampel, chunk offset, edit list, dan track audio sesuai resep,
    - menambahkan silent tail dan track clone,
    - menulis metadata mdta KoRifCan.
-4. Hasil diunduh sebagai file MP4 baru. File asli tidak disentuh.
+5. Hasil diunduh sebagai file MP4 baru. File asli tidak disentuh.
+
+## HDR & Dolby Vision
+
+Opsi **Pertahankan HDR/DV** aktif secara default bila sumbernya HDR/DV, dan
+nonaktif (serta tidak bisa dipilih) untuk sumber SDR.
+
+Yang benar-benar dilakukan opsi ini:
+
+- Bitstream video tetap disalin byte-per-byte; tidak ada re-encode.
+- Penanda container Dolby Vision (`dvvC`/`dvcC`) dan brand `dby1` dikembalikan.
+- Metadata statis HDR (`colr` PQ, `mdcv`, `clli`, `pasp`, `clap`, `fiel`) dipertahankan atau ditambahkan bila hilang.
+- Metadata dinamis yang sudah ada di dalam bitstream (RPU Dolby Vision dan SEI HDR10+) tetap utuh karena sampel video tidak disentuh.
+
+Yang **tidak** dilakukan:
+
+- Tidak mengubah video SDR menjadi HDR10, HDR10+, atau Dolby Vision.
+- Tidak menambahkan metadata dinamis palsu.
+- Tidak menjamin TikTok mempertahankan HDR/DV setelah upload.
+
+Mengubah eksposur tidak bisa membuat HDR. HDR10/HDR10+ membutuhkan bitstream
+10-bit PQ; HDR10+ membutuhkan metadata dinamis ST 2094-40 per scene; Dolby
+Vision membutuhkan RPU per frame dan tooling berlisensi Dolby. Semua itu
+memerlukan decode + encode ulang dan tetap tidak bisa disintesis hanya dari
+slider eksposur. Karena itu KoRifCan memilih passthrough yang jujur, bukan label
+HDR palsu.
+
+Contoh hasil pada sumber Dolby Vision Profile 8.1 + HDR10+:
+
+- 1.627/1.627 sampel video identik dengan sumber.
+- `dvvC` `010010251000000000000000000000000000000000000000` dipertahankan.
+- `ftyp` memuat `dby1`; `colr` tetap `nclx` 9/16/9.
+- Tanpa opsi HDR, output kembali persis ke resep lama (tanpa `dvvC`/`dby1`).
 
 ## Resep
 
@@ -68,6 +102,7 @@ Tidak ada build step dan tidak ada dependensi npm.
 ## Catatan
 
 - TikTok tetap memproses ulang video saat upload. Resep ini membantu mempertahankan kualitas, bukan jaminan hasil identik.
+- HDR/DV hanya dipertahankan dari sumber yang sudah HDR/DV. Sumber SDR tetap SDR; situs ini tidak melakukan konversi SDR→HDR dan tidak menambahkan label HDR palsu.
 - Video wajib memiliki trek audio karena resep membangun ulang track audio.
 - File besar membutuhkan RAM yang cukup; desktop lebih disarankan daripada ponsel.
 - Mesin ffmpeg sekitar 31 MB dan di-cache service worker setelah kunjungan pertama.
