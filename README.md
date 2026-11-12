@@ -137,6 +137,7 @@ Tidak ada build step dan tidak ada dependensi npm.
 - Video wajib memiliki trek audio karena resep membangun ulang track audio.
 - File besar membutuhkan RAM yang cukup; desktop lebih disarankan daripada ponsel.
 - Mesin ffmpeg sekitar 31 MB dan di-cache service worker setelah kunjungan pertama.
+- Aset lokal memakai query versi (`?v=...`) agar browser tidak memakai `app.js`/`style.css` lama dari cache. Naikkan versinya saat mengubah file tersebut.
 
 ## Lisensi
 

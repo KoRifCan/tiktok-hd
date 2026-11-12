@@ -11,7 +11,7 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="KoRifCan">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=20261112c">
 </head>
 <body>
   <svg class="svg-sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
@@ -401,13 +401,15 @@
                   <svg class="icon" aria-hidden="true"><use href="#icon-download"></use></svg>
                   <span>Unduh video</span>
                 </a>
-                <a class="btn btn-studio" id="btnStudio" href="https://www.tiktok.com/tiktokstudio/upload" target="_blank" rel="noopener noreferrer">
+                <a class="btn btn-studio" id="studioLink" href="https://www.tiktok.com/tiktokstudio/upload" target="_blank" rel="noopener noreferrer">
                   <span class="studio-mark"><svg class="icon" aria-hidden="true"><use href="#icon-tiktok"></use></svg></span>
                   <span class="studio-copy">
                     <span class="studio-title">Upload ke TikTok Studio</span>
                     <span class="studio-sub">Buka tab baru · pilih file hasil unduhan</span>
                   </span>
                   <span class="studio-arrow"><svg class="icon" aria-hidden="true"><use href="#icon-external"></use></svg></span>
+                  <!-- Stub untuk app.js lama yang masih tersimpan di cache: jangan sampai handler unduhan otomatisnya menempel ke tautan asli. -->
+                  <span id="btnStudio" hidden></span>
                 </a>
                 <p class="studio-hint">Unduh video dulu, lalu seret atau pilih <strong id="studioFileName">video-korifcan.mp4</strong> di tab TikTok Studio.</p>
                 <button class="btn btn-ghost btn-again" type="button" id="btnAgain">Proses video lain</button>
@@ -662,8 +664,8 @@
     </div>
   </footer>
 
-  <script src="mp4-patcher.js"></script>
+  <script src="mp4-patcher.js?v=20261112c"></script>
   <script src="ffmpeg/ffmpeg.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=20261112c"></script>
 </body>
 </html>
