@@ -116,8 +116,20 @@ patch-worker.js     Worker untuk container patcher
 mp4-patcher.js      Implementasi patcher MP4
 sw.js               Cache runtime untuk aset ffmpeg
 ffmpeg/             ffmpeg.wasm 5.1.4 (core + loader)
+fonts/              Font self-hosted + lisensi OFL
 favicon.svg         Ikon situs
 ```
+
+## Tipografi
+
+Situs memakai dua font variabel self-hosted, tanpa dependensi Google Fonts saat runtime:
+
+- **Bricolage Grotesque** untuk heading dan wordmark — memberi karakter yang lebih hangat dan tidak kaku.
+- **Plus Jakarta Sans** untuk body, tombol, dan UI — tetap modern dan mudah dibaca di layar kecil.
+
+Keduanya berlisensi SIL Open Font License 1.1. Berkas lisensi ada di
+`fonts/OFL-BricolageGrotesque.txt` dan `fonts/OFL-PlusJakartaSans.txt`.
+Metadata teknis (nama file, codec, bitrate) tetap memakai font monospace sistem.
 
 ## Menjalankan lokal
 
@@ -141,4 +153,4 @@ Tidak ada build step dan tidak ada dependensi npm.
 
 ## Lisensi
 
-Kode situs ini dibuat untuk KoRifCan. ffmpeg.wasm mengikuti lisensi ffmpeg dan proyek asalnya.
+Kode situs ini dibuat untuk KoRifCan. ffmpeg.wasm mengikuti lisensi ffmpeg dan proyek asalnya. Font Bricolage Grotesque dan Plus Jakarta Sans memakai SIL Open Font License 1.1; teks lisensinya tersedia di folder `fonts/`.
