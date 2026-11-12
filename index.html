@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>KoRifCan — Siapkan Video TikTok Tanpa Encode Ulang</title>
+  <meta name="description" content="Siapkan video TikTok dengan resep Best Quality atau Best Quality For iPhone. Video tidak di-encode ulang dan seluruh proses berjalan di browser-mu.">
+  <meta name="theme-color" content="#07070a">
+  <meta property="og:title" content="KoRifCan — Siapkan Video TikTok Tanpa Encode Ulang">
+  <meta property="og:description" content="Upload prep untuk TikTok. Stream video disalin utuh, audio dan container dirapikan, 100% diproses di browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="KoRifCan">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <svg class="svg-sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="gradMark" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#25f4ee"></stop>
+        <stop offset=".52" stop-color="#8b7cff"></stop>
+        <stop offset="1" stop-color="#ff375f"></stop>
+      </linearGradient>
+    </defs>
+    <symbol id="icon-mark" viewBox="0 0 40 40">
+      <rect width="40" height="40" rx="12" fill="url(#gradMark)"></rect>
+      <path d="M13 11v18M13 20.2l10.6-8.7M13 20.2l10.6 8.7" fill="none" stroke="#08080c" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"></path>
+      <circle cx="28.4" cy="11.6" r="2.8" fill="#08080c"></circle>
+    </symbol>
+    <symbol id="icon-arrow" viewBox="0 0 24 24">
+      <path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+    </symbol>
+    <symbol id="icon-upload" viewBox="0 0 24 24">
+      <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 15v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+    </symbol>
+    <symbol id="icon-download" viewBox="0 0 24 24">
+      <path d="M12 4v12m0 0l4.5-4.5M12 16l-4.5-4.5M5 20h14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path>
+    </symbol>
+    <symbol id="icon-file" viewBox="0 0 24 24">
+      <path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path>
+      <path d="M14 3v5h4M9 12h6M9 16h4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+    </symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24">
+      <path d="m5 12.5 4.3 4.3L19 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+    </symbol>
+    <symbol id="icon-shield" viewBox="0 0 24 24">
+      <path d="M12 3l7 3v5.5c0 4.5-3 7.7-7 9.5-4-1.8-7-5-7-9.5V6l7-3Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path>
+      <path d="m9 12 2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+    </symbol>
+    <symbol id="icon-lock" viewBox="0 0 24 24">
+      <rect x="5" y="10" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.7"></rect>
+      <path d="M8.5 10V7.5a3.5 3.5 0 1 1 7 0V10M12 14v2.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path>
+    </symbol>
+    <symbol id="icon-waves" viewBox="0 0 24 24">
+      <path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 10.5v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+    </symbol>
+    <symbol id="icon-layers" viewBox="0 0 24 24">
+      <path d="m12 4 8 4.5-8 4.5-8-4.5L12 4Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path>
+      <path d="m4 13 8 4.5 8-4.5M4 17.2l8 4.5 8-4.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+    </symbol>
+    <symbol id="icon-tag" viewBox="0 0 24 24">
+      <path d="M4 5.5v6.2c0 .5.2 1 .6 1.4l6.3 6.3c.8.8 2 .8 2.8 0l4.7-4.7c.8-.8.8-2 0-2.8l-6.3-6.3c-.4-.4-.9-.6-1.4-.6H5.5C4.7 5 4 5 4 5.5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path>
+      <circle cx="8.8" cy="9.2" r="1.4" fill="currentColor"></circle>
+    </symbol>
+    <symbol id="icon-phone" viewBox="0 0 24 24">
+      <rect x="7" y="2.5" width="10" height="19" rx="2.7" fill="none" stroke="currentColor" stroke-width="1.7"></rect>
+      <path d="M10.5 5.5h3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path>
+      <circle cx="12" cy="18" r="1" fill="currentColor"></circle>
+    </symbol>
+    <symbol id="icon-spark" viewBox="0 0 24 24">
+      <path d="M12 3l1.7 5.1L19 10l-5.3 1.9L12 17l-1.7-5.1L5 10l5.3-1.9L12 3Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path>
+      <path d="M18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z" fill="currentColor"></path>
+    </symbol>
+    <symbol id="icon-chevron" viewBox="0 0 24 24">
+      <path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path>
+    </symbol>
+    <symbol id="icon-alert" viewBox="0 0 24 24">
+      <path d="M12 8v5M12 16.5v.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+      <path d="M10.3 4.2 2.9 17a2 2 0 0 0 1.7 3h14.8a2 2 0 0 0 1.7-3L13.7 4.2a2 2 0 0 0-3.4 0Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path>
+    </symbol>
+    <symbol id="icon-x" viewBox="0 0 24 24">
+      <path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"></path>
+    </symbol>
+    <symbol id="icon-play" viewBox="0 0 24 24">
+      <path d="M9 7.5v9l7.5-4.5L9 7.5Z" fill="currentColor"></path>
+    </symbol>
+  </svg>
+
+  <div class="page-glow page-glow--one" aria-hidden="true"></div>
+  <div class="page-glow page-glow--two" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#atas" aria-label="KoRifCan, kembali ke atas">
+        <span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#icon-mark"></use></svg></span>
+        <span class="brand-name">KoRifCan<span class="brand-dot">.</span></span>
+      </a>
+      <nav class="header-nav" aria-label="Navigasi utama">
+        <a href="#cara-kerja">Cara kerja</a>
+        <a href="#resep">Resep</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <a class="header-cta" href="https://www.tiktok.com/@korifcan" target="_blank" rel="noopener noreferrer">
+        <span>@korifcan</span>
+        <svg class="icon" aria-hidden="true"><use href="#icon-arrow"></use></svg>
+      </a>
+    </div>
+  </header>
+
+  <main id="atas">
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="eyebrow-dot"></span> TikTok upload prep</div>
+          <h1>Kualitas asli video,<br><span class="text-grad">siap untuk TikTok.</span></h1>
+          <p class="hero-lead">KoRifCan menyiapkan file MP4 dengan resep <strong>Best Quality</strong> atau <strong>Best Quality For iPhone</strong>. Stream video tidak di-encode ulang — semuanya berjalan di browser-mu.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#studio">
+              <span>Siapkan video</span>
+              <svg class="icon" aria-hidden="true"><use href="#icon-arrow"></use></svg>
+            </a>
+            <a class="btn btn-ghost" href="#cara-kerja">Lihat cara kerja</a>
+          </div>
+          <ul class="hero-facts" aria-label="Keunggulan KoRifCan">
+            <li><svg class="icon" aria-hidden="true"><use href="#icon-lock"></use></svg> 100% di perangkat</li>
+            <li><svg class="icon" aria-hidden="true"><use href="#icon-waves"></use></svg> Video utuh</li>
+            <li><svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg> Tanpa akun</li>
+          </ul>
+        </div>
+
+        <div class="hero-visual" aria-hidden="true">
+          <div class="phone">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <div class="screen-status"><span>9:41</span><span class="screen-status-icons"><i></i><i></i><i></i></span></div>
+              <div class="screen-media">
+                <div class="screen-orb screen-orb--a"></div>
+                <div class="screen-orb screen-orb--b"></div>
+                <div class="screen-ring"></div>
+                <div class="screen-play"><svg class="icon"><use href="#icon-play"></use></svg></div>
+                <div class="screen-rail">
+                  <span class="rail-dot"></span><span class="rail-dot"></span><span class="rail-dot"></span>
+                </div>
+                <div class="screen-caption">
+                  <span class="caption-avatar"></span>
+                  <span class="caption-lines"><i></i><i></i></span>
+                </div>
+              </div>
+              <div class="screen-bottom">
+                <span class="screen-progress"></span>
+                <div class="screen-tabs"><i class="is-on"></i><i></i><i></i></div>
+              </div>
+            </div>
+          </div>
+          <div class="float-card float-card--video">
+            <span class="float-icon"><svg class="icon"><use href="#icon-shield"></use></svg></span>
+            <span><strong>Video stream</strong><small>disalin 100%</small></span>
+          </div>
+          <div class="float-card float-card--audio">
+            <span class="float-icon float-icon--cyan"><svg class="icon"><use href="#icon-waves"></use></svg></span>
+            <span><strong>Audio 48 kHz</strong><small>AAC kualitas tinggi</small></span>
+          </div>
+          <div class="float-card float-card--meta">
+            <span class="float-icon float-icon--pink"><svg class="icon"><use href="#icon-tag"></use></svg></span>
+            <span><strong>Metadata</strong><small>KoRifCan</small></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="studio-section" id="studio">
+      <div class="container">
+        <div class="section-head">
+          <div class="eyebrow"><span class="eyebrow-dot"></span> Studio</div>
+          <h2>Siapkan videomu.</h2>
+          <p>Pilih resep, masukkan video, lalu unduh hasilnya. Tidak ada unggahan ke server — hanya kamu dan perangkatmu.</p>
+        </div>
+
+        <div class="studio-card" id="studioCard">
+          <div class="studio-step">
+            <div class="step-head">
+              <span class="step-index">01</span>
+              <div>
+                <h3>Pilih resep</h3>
+                <p>Dua resep, stream video yang sama. Bedanya ada di audio dan struktur container.</p>
+              </div>
+            </div>
+
+            <div class="preset-grid" role="radiogroup" aria-label="Pilih resep">
+              <label class="preset-option" data-preset="best">
+                <input type="radio" name="preset" value="best" checked>
+                <span class="preset-check"><svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg></span>
+                <span class="preset-top">
+                  <span class="preset-icon"><svg class="icon" aria-hidden="true"><use href="#icon-spark"></use></svg></span>
+                  <span class="preset-badge">Direkomendasikan</span>
+                </span>
+                <span class="preset-name">Best Quality</span>
+                <span class="preset-desc">Untuk sebagian besar video. Audio 48 kHz kualitas tinggi, container dirapikan, dan metadata KoRifCan ditulis rapi.</span>
+                <span class="preset-specs">
+                  <span>48 kHz</span><span>±346 kbps</span><span>AAC stereo</span>
+                </span>
+              </label>
+
+              <label class="preset-option" data-preset="iphone">
+                <input type="radio" name="preset" value="iphone">
+                <span class="preset-check"><svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg></span>
+                <span class="preset-top">
+                  <span class="preset-icon preset-icon--cyan"><svg class="icon" aria-hidden="true"><use href="#icon-phone"></use></svg></span>
+                  <span class="preset-badge preset-badge--quiet">Apple</span>
+                </span>
+                <span class="preset-name">Best Quality For iPhone</span>
+                <span class="preset-desc">Menambahkan track audio 44,1 kHz untuk kompatibilitas iPhone, ditambah track HQ 48 kHz. Pilih ini jika hasil Best Quality terasa janggal di perangkat Apple.</span>
+                <span class="preset-specs">
+                  <span>44,1 + 48 kHz</span><span>128 + 346 kbps</span><span>Dual audio</span>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <div class="studio-step">
+            <div class="step-head">
+              <span class="step-index">02</span>
+              <div>
+                <h3>Masukkan video</h3>
+                <p>File tetap di perangkatmu. Kami hanya membaca dan menyiapkan salinan baru.</p>
+              </div>
+            </div>
+
+            <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Pilih video MP4 atau MOV">
+              <input type="file" id="fileInput" accept="video/mp4,video/quicktime,.mp4,.mov,.m4v" hidden>
+              <span class="dropzone-icon"><svg class="icon" aria-hidden="true"><use href="#icon-upload"></use></svg></span>
+              <span class="dropzone-title">Tarik video ke sini</span>
+              <span class="dropzone-sub">atau <u>klik untuk memilih</u> dari perangkat</span>
+              <span class="dropzone-note">MP4 / MOV · wajib trek audio · 100% lokal</span>
+              <span class="dropzone-orbit dropzone-orbit--one"></span>
+              <span class="dropzone-orbit dropzone-orbit--two"></span>
+            </div>
+
+            <div class="file-card" id="fileCard" hidden>
+              <span class="file-icon"><svg class="icon" aria-hidden="true"><use href="#icon-file"></use></svg></span>
+              <span class="file-copy">
+                <span class="file-name" id="fileName">video.mp4</span>
+                <span class="file-meta" id="fileMeta">—</span>
+              </span>
+              <span class="file-actions">
+                <button class="mini-btn" type="button" id="btnChange">Ganti</button>
+                <button class="icon-btn" type="button" id="btnRemove" aria-label="Hapus video">
+                  <svg class="icon" aria-hidden="true"><use href="#icon-x"></use></svg>
+                </button>
+              </span>
+            </div>
+
+            <div class="process-row">
+              <button class="btn btn-primary btn-process" type="button" id="btnProcess" disabled>
+                <svg class="icon" aria-hidden="true"><use href="#icon-spark"></use></svg>
+                <span id="processLabel">Proses video</span>
+              </button>
+              <p class="process-note" id="processNote">Pilih video dulu untuk mulai.</p>
+            </div>
+          </div>
+
+          <div class="progress-panel" id="progressPanel" aria-live="polite" hidden>
+            <div class="progress-head">
+              <div>
+                <h3 id="progressTitle">Sedang menyiapkan videomu</h3>
+                <p id="progressSub">Jangan tutup tab ini selama proses berjalan.</p>
+              </div>
+              <span class="progress-pct" id="progressPct">0%</span>
+            </div>
+            <div class="progress-track" id="progressBar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Progres pemrosesan">
+              <span class="progress-fill" id="barFill"></span>
+            </div>
+            <ol class="stage-list" id="stageList">
+              <li class="stage" data-stage="0"><span class="stage-dot"><span>1</span></span><span class="stage-label">Membaca file &amp; sidik jari</span></li>
+              <li class="stage" data-stage="1"><span class="stage-dot"><span>2</span></span><span class="stage-label">Memuat mesin ffmpeg</span></li>
+              <li class="stage" data-stage="2"><span class="stage-dot"><span>3</span></span><span class="stage-label">Menyalin video &amp; menyiapkan audio</span></li>
+              <li class="stage" data-stage="3"><span class="stage-dot"><span>4</span></span><span class="stage-label">Menyusun container &amp; metadata</span></li>
+              <li class="stage" data-stage="4"><span class="stage-dot"><span>5</span></span><span class="stage-label">Menyiapkan file unduhan</span></li>
+            </ol>
+          </div>
+
+          <div class="error-box" id="errorBox" role="alert" hidden>
+            <span class="error-icon"><svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg></span>
+            <div class="error-copy">
+              <strong>Proses belum berhasil</strong>
+              <p id="errorText">Terjadi kesalahan.</p>
+            </div>
+            <button class="icon-btn" type="button" id="btnErrorClose" aria-label="Tutup pesan error">
+              <svg class="icon" aria-hidden="true"><use href="#icon-x"></use></svg>
+            </button>
+          </div>
+
+          <div class="result-panel" id="resultPanel" role="status" hidden>
+            <div class="result-head">
+              <span class="result-badge"><svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg> Siap diunduh</span>
+              <h3>Videomu sudah disiapkan.</h3>
+              <p>Stream video disalin utuh. File asli tetap tidak berubah.</p>
+            </div>
+            <div class="result-grid">
+              <div class="result-preview">
+                <video id="preview" controls playsinline preload="metadata" poster="poster.svg"></video>
+              </div>
+              <div class="result-detail">
+                <span class="result-file" id="resultName">video-korifcan.mp4</span>
+                <dl class="result-stats">
+                  <div><dt>Ukuran file</dt><dd id="resultSize">—</dd></div>
+                  <div><dt>Durasi</dt><dd id="resultDuration">—</dd></div>
+                  <div><dt>Resep</dt><dd id="resultPreset">—</dd></div>
+                  <div><dt>Stream video</dt><dd id="resultStream">—</dd></div>
+                </dl>
+                <p class="result-meta" id="resultMeta">Metadata artist &amp; comment: KoRifCan</p>
+                <a class="btn btn-primary btn-download" id="btnDownload" href="#" download>
+                  <svg class="icon" aria-hidden="true"><use href="#icon-download"></use></svg>
+                  <span>Unduh video</span>
+                </a>
+                <button class="btn btn-ghost btn-again" type="button" id="btnAgain">Proses video lain</button>
+              </div>
+            </div>
+            <p class="result-footnote">TikTok tetap memproses ulang video saat upload. Resep ini membantu mempertahankan kualitas, bukan menjamin hasil yang identik.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section how-section" id="cara-kerja">
+      <div class="container">
+        <div class="section-head">
+          <div class="eyebrow"><span class="eyebrow-dot"></span> Di balik layar</div>
+          <h2>Bukan kompresi. Bukan encode ulang.</h2>
+          <p>KoRifCan membangun ulang container MP4 di sekitar bitstream video yang sudah ada. Tiga hal ini yang terjadi:</p>
+        </div>
+        <div class="feature-grid">
+          <article class="feature-card" data-reveal>
+            <span class="feature-number">01</span>
+            <span class="feature-icon"><svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg></span>
+            <h3>Salin bitstream video</h3>
+            <p>Setiap frame video disalin byte-per-byte. Tidak ada re-encode, tidak ada penurunan bitrate. Penanda Dolby Vision di level container dibersihkan bila ada; data gambarnya tetap utuh.</p>
+          </article>
+          <article class="feature-card" data-reveal>
+            <span class="feature-number">02</span>
+            <span class="feature-icon feature-icon--cyan"><svg class="icon" aria-hidden="true"><use href="#icon-waves"></use></svg></span>
+            <h3>Rakit audio &amp; container</h3>
+            <p>Audio AAC disiapkan sesuai resep. Track, edit list, sample table, dan chunk offset dihitung ulang agar struktur file bersih dan konsisten.</p>
+          </article>
+          <article class="feature-card" data-reveal>
+            <span class="feature-number">03</span>
+            <span class="feature-icon feature-icon--pink"><svg class="icon" aria-hidden="true"><use href="#icon-tag"></use></svg></span>
+            <h3>Tulis metadata KoRifCan</h3>
+            <p>Metadata mdta ditulis rapi: artist, comment, copyright, dan encoder. Copyright memakai 32 karakter pertama SHA-256 file asli sebagai sidik jari.</p>
+          </article>
+        </div>
+        <div class="honesty-note" data-reveal>
+          <svg class="icon" aria-hidden="true"><use href="#icon-alert"></use></svg>
+          <p><strong>Catatan penting.</strong> TikTok tetap memproses ulang setiap video yang diunggah. Resep ini membantu platform mempertahankan kualitas, tetapi bukan jaminan hasil identik atau distribusi.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section recipe-section" id="resep">
+      <div class="container">
+        <div class="section-head">
+          <div class="eyebrow"><span class="eyebrow-dot"></span> Detail resep</div>
+          <h2>Dua preset, satu kualitas video.</h2>
+          <p>Keduanya memakai stream video yang sama persis. Perbedaan hanya pada audio dan struktur container.</p>
+        </div>
+
+        <div class="recipe-grid">
+          <article class="recipe-card" data-reveal>
+            <div class="recipe-head">
+              <span class="recipe-icon"><svg class="icon" aria-hidden="true"><use href="#icon-spark"></use></svg></span>
+              <div>
+                <h3>Best Quality</h3>
+                <p>Pilihan utama untuk sebagian besar upload.</p>
+              </div>
+            </div>
+            <ul class="recipe-list">
+              <li><span>Video</span><strong>Stream copy 100%</strong></li>
+              <li><span>Audio</span><strong>AAC-LC 48 kHz stereo</strong></li>
+              <li><span>Bitrate audio</span><strong>±346 kbps</strong></li>
+              <li><span>Struktur audio</span><strong>1 track + clone</strong></li>
+              <li><span>Movie timescale</span><strong>1000</strong></li>
+              <li><span>Faststart</span><strong>Aktif</strong></li>
+            </ul>
+          </article>
+
+          <article class="recipe-card recipe-card--iphone" data-reveal>
+            <div class="recipe-head">
+              <span class="recipe-icon recipe-icon--cyan"><svg class="icon" aria-hidden="true"><use href="#icon-phone"></use></svg></span>
+              <div>
+                <h3>Best Quality For iPhone</h3>
+                <p>Untuk perangkat Apple yang butuh track kompatibilitas.</p>
+              </div>
+            </div>
+            <ul class="recipe-list">
+              <li><span>Video</span><strong>Stream copy 100%</strong></li>
+              <li><span>Audio kompatibilitas</span><strong>AAC-LC 44,1 kHz 128 kbps</strong></li>
+              <li><span>Audio HQ</span><strong>AAC-LC 48 kHz ±346 kbps</strong></li>
+              <li><span>Struktur audio</span><strong>Kompatibilitas + HQ + clone</strong></li>
+              <li><span>Movie timescale</span><strong>384000</strong></li>
+              <li><span>Edit list</span><strong>Kompatibilitas iPhone</strong></li>
+            </ul>
+          </article>
+        </div>
+
+        <details class="recipe-details">
+          <summary>
+            <span>Lihat detail teknis resep</span>
+            <svg class="icon" aria-hidden="true"><use href="#icon-chevron"></use></svg>
+          </summary>
+          <div class="recipe-details-body">
+            <div class="detail-block">
+              <h4>Best Quality</h4>
+              <ul>
+                <li>Audio utama AAC-LC 48 kHz, stereo, target 346 kbps.</li>
+                <li>18 frame silent tail; 8 frame terakhir memakai entri stsd kedua.</li>
+                <li>Satu track audio HQ ditambah satu track clone yang berbagi media data.</li>
+                <li>Movie timescale 1000; video edit list di-reset ke media time 0.</li>
+                <li>Metadata mdta: artist, comment, copyright, te_is_reencode, encoder.</li>
+              </ul>
+            </div>
+            <div class="detail-block">
+              <h4>Best Quality For iPhone</h4>
+              <ul>
+                <li>Track kompatibilitas AAC-LC 44,1 kHz, stereo, 128 kbps, dengan 7 frame tail.</li>
+                <li>Track HQ AAC-LC 48 kHz, stereo, target 346 kbps, dengan 19 frame tail.</li>
+                <li>Track HQ memiliki clone; total tiga track audio di dalam container.</li>
+                <li>Movie timescale 384000; edit list kompatibilitas memakai media time 2112.</li>
+                <li>Metadata mdta yang sama, ditulis untuk seluruh file.</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section class="section tips-section">
+      <div class="container">
+        <div class="section-head">
+          <div class="eyebrow"><span class="eyebrow-dot"></span> Sebelum upload</div>
+          <h2>Supaya hasilnya lebih maksimal.</h2>
+          <p>File yang rapi membantu, tetapi kebiasaan upload juga berpengaruh.</p>
+        </div>
+        <div class="tip-grid">
+          <article class="tip-card" data-reveal>
+            <span class="tip-icon"><svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg></span>
+            <h3>Export di resolusi asli</h3>
+            <p>Gunakan 1080 × 1920 dan frame rate asli dari editor. Jangan upscale hanya untuk mengejar angka.</p>
+          </article>
+          <article class="tip-card" data-reveal>
+            <span class="tip-icon"><svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg></span>
+            <h3>Upload lewat aplikasi TikTok</h3>
+            <p>Aplikasi memberi kontrol kualitas yang lebih konsisten dibanding upload lewat browser.</p>
+          </article>
+          <article class="tip-card" data-reveal>
+            <span class="tip-icon"><svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg></span>
+            <h3>Pakai koneksi stabil</h3>
+            <p>Upload yang terputus bisa memicu pemrosesan ulang. Pastikan koneksi kuat sampai selesai.</p>
+          </article>
+          <article class="tip-card" data-reveal>
+            <span class="tip-icon"><svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg></span>
+            <h3>Simpan file asli</h3>
+            <p>Selalu simpan master file. Hasil KoRifCan adalah salinan baru, bukan pengganti arsipmu.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section faq-section" id="faq">
+      <div class="container faq-container">
+        <div class="section-head">
+          <div class="eyebrow"><span class="eyebrow-dot"></span> FAQ</div>
+          <h2>Pertanyaan yang sering muncul.</h2>
+          <p>Jawaban singkat, tanpa janji berlebihan.</p>
+        </div>
+        <div class="faq-list">
+          <details class="faq-item">
+            <summary><span>Apakah video saya diunggah ke server?</span><svg class="icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></summary>
+            <p>Tidak. Seluruh proses berjalan di browser menggunakan WebAssembly. Tidak ada file yang dikirim ke server, tidak ada akun, dan tidak ada penyimpanan di cloud.</p>
+          </details>
+          <details class="faq-item">
+            <summary><span>Apakah kualitas video dinaikkan?</span><svg class="icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></summary>
+            <p>Tidak. Tidak ada peningkatan ajaib. KoRifCan hanya menyiapkan container, audio, dan metadata agar TikTok lebih mudah mempertahankan kualitas. Stream video tetap sama persis dengan file aslimu.</p>
+          </details>
+          <details class="faq-item">
+            <summary><span>Apa bedanya Best Quality dan Best Quality For iPhone?</span><svg class="icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></summary>
+            <p>Best Quality memakai satu track audio 48 kHz kualitas tinggi. Best Quality For iPhone menambahkan track kompatibilitas 44,1 kHz 128 kbps di samping track HQ 48 kHz. Stream video keduanya identik.</p>
+          </details>
+          <details class="faq-item">
+            <summary><span>Kenapa video harus punya trek audio?</span><svg class="icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></summary>
+            <p>Resep ini membangun ulang trek audio sesuai struktur yang dituju. Kalau video belum punya audio, tambahkan musik atau trek suara di editor terlebih dahulu, lalu proses lagi.</p>
+          </details>
+          <details class="faq-item">
+            <summary><span>Berapa lama prosesnya?</span><svg class="icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></summary>
+            <p>Setelah mesin ffmpeg termuat, stream copy biasanya cepat — sering di bawah satu menit untuk video berukuran normal. Kunjungan pertama perlu mengunduh mesin sekitar 31 MB, jadi bisa lebih lama di koneksi lambat.</p>
+          </details>
+          <details class="faq-item">
+            <summary><span>Apakah file asli saya berubah?</span><svg class="icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></summary>
+            <p>Tidak. File asli tidak disentuh. KoRifCan membuat file baru di memori browser dan mengunduhnya sebagai salinan terpisah.</p>
+          </details>
+          <details class="faq-item">
+            <summary><span>Browser apa yang didukung?</span><svg class="icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></summary>
+            <p>Browser modern yang mendukung WebAssembly: Chrome, Edge, Firefox, dan Safari versi terbaru. Untuk file besar, desktop dengan RAM cukup lebih disarankan daripada ponsel.</p>
+          </details>
+          <details class="faq-item">
+            <summary><span>Apakah hasilnya dijamin bagus di TikTok?</span><svg class="icon" aria-hidden="true"><use href="#icon-chevron"></use></svg></summary>
+            <p>Tidak ada jaminan. TikTok tetap memproses ulang video dan hasil akhirnya dipengaruhi banyak faktor, termasuk koneksi dan jenis konten. Resep ini hanya membantu menjaga kualitas input.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="closing">
+      <div class="container closing-inner">
+        <div>
+          <div class="eyebrow"><span class="eyebrow-dot"></span> Siap?</div>
+          <h2>File rapi. Upload lebih tenang.</h2>
+          <p>Gratis, tanpa akun, dan file tidak pernah meninggalkan perangkatmu.</p>
+        </div>
+        <a class="btn btn-primary" href="#studio">
+          <span>Siapkan video sekarang</span>
+          <svg class="icon" aria-hidden="true"><use href="#icon-arrow"></use></svg>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="#atas" aria-label="KoRifCan">
+          <span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#icon-mark"></use></svg></span>
+          <span class="brand-name">KoRifCan<span class="brand-dot">.</span></span>
+        </a>
+        <p>Upload prep untuk TikTok. Dibuat dan dirawat oleh KoRifCan.</p>
+      </div>
+      <div class="footer-links">
+        <a href="#cara-kerja">Cara kerja</a>
+        <a href="#resep">Resep</a>
+        <a href="#faq">FAQ</a>
+        <a href="https://www.tiktok.com/@korifcan" target="_blank" rel="noopener noreferrer">TikTok @korifcan</a>
+      </div>
+      <div class="footer-note">
+        <span class="footer-pill"><svg class="icon" aria-hidden="true"><use href="#icon-lock"></use></svg> 100% lokal</span>
+        <p>Bukan layanan resmi TikTok. TikTok adalah merek dagang TikTok Pte. Ltd.</p>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <span>© <span id="year">2026</span> KoRifCan</span>
+      <span>Dibuat untuk kreator yang peduli detail.</span>
+    </div>
+  </footer>
+
+  <script src="mp4-patcher.js"></script>
+  <script src="ffmpeg/ffmpeg.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

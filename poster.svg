@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1280">
+  <defs>
+    <radialGradient id="a" cx=".3" cy=".25" r=".65">
+      <stop stop-color="#25f4ee" stop-opacity=".85"/>
+      <stop offset="1" stop-color="#25f4ee" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="b" cx=".7" cy=".7" r=".6">
+      <stop stop-color="#ff375f" stop-opacity=".8"/>
+      <stop offset="1" stop-color="#ff375f" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="c" cx=".45" cy=".45" r=".6">
+      <stop stop-color="#8b7cff" stop-opacity=".75"/>
+      <stop offset="1" stop-color="#8b7cff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="720" height="1280" fill="#0a0a12"/>
+  <circle cx="170" cy="270" r="300" fill="url(#a)"/>
+  <circle cx="610" cy="850" r="330" fill="url(#b)"/>
+  <circle cx="260" cy="1010" r="280" fill="url(#c)"/>
+  <circle cx="360" cy="594" r="96" fill="#08080c" fill-opacity=".35" stroke="#ffffff" stroke-opacity=".55" stroke-width="2"/>
+  <path d="M334 557l74 44-74 44z" fill="#ffffff"/>
+  <text x="360" y="782" text-anchor="middle" fill="#ffffff" fill-opacity=".85" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="700" letter-spacing="7">KORIFCAN</text>
+  <text x="360" y="820" text-anchor="middle" fill="#ffffff" fill-opacity=".4" font-family="ui-monospace, Menlo, monospace" font-size="17" letter-spacing="3">TIKTOK UPLOAD PREP</text>
+</svg>
