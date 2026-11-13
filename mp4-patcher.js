@@ -1267,7 +1267,7 @@
   // Metadata
   // ---------------------------------------------------------------------
 
-  function buildUdta(opts, preset) {
+  function buildMdtaMeta(opts) {
     var entries = [
       ['artist', opts.artist || ARTIST],
       ['comment', opts.comment || COMMENT],
@@ -1287,8 +1287,41 @@
       var dataBox = box('data', concat([u32b(1), u32b(0), value]));
       itemParts.push(concat([u32b(8 + dataBox.length), u32b(i + 1), dataBox]));
     }
-    var meta = box('meta', concat([u32b(0), hdlr, box('keys', concat(keyParts)), box('ilst', concat(itemParts))]));
-    return box('udta', meta);
+    return box('meta', concat([u32b(0), hdlr, box('keys', concat(keyParts)), box('ilst', concat(itemParts))]));
+  }
+
+  // iTunes-style atoms. These are separate from the mdta keys above because
+  // players differ: some read mdta, some read ©ART/©cmt/…, and some read both.
+  // The values stay KoRifCan; no ADJN branding is written.
+  function buildItunesItem(type, text) {
+    var value = utf8(String(text == null ? '' : text));
+    var dataBox = box('data', concat([u32b(1), u32b(0), value]));
+    return box(type, dataBox);
+  }
+
+  function buildItunesMeta(opts) {
+    var brand = opts.artist || ARTIST;
+    var hdlr = box('hdlr', concat([
+      u32b(0), u32b(0), ascii('mdir'), zeros(12), u8b(0)
+    ]));
+    var items = [
+      buildItunesItem('\u00a9ART', brand),
+      buildItunesItem('\u00a9cmt', opts.comment || COMMENT),
+      buildItunesItem('\u00a9nam', opts.title || brand),
+      buildItunesItem('\u00a9wrt', opts.writer || brand),
+      buildItunesItem('\u00a9alb', opts.album || brand),
+      buildItunesItem('\u00a9grp', opts.grouping || brand),
+      buildItunesItem('cprt', opts.copyrightText || brand),
+      buildItunesItem('\u00a9too', opts.encoder || ENCODER)
+    ];
+    return box('meta', concat([u32b(0), hdlr, box('ilst', concat(items))]));
+  }
+
+  function buildUdta(opts, preset) {
+    // Keep the existing mdta metadata and add iTunes-style atoms in a second
+    // meta box. Both describe the same KoRifCan output; neither touches the
+    // video samples or changes the stream-copy result.
+    return box('udta', concat([buildMdtaMeta(opts), buildItunesMeta(opts)]));
   }
 
   // ---------------------------------------------------------------------

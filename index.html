@@ -396,7 +396,7 @@
                   <div><dt>Stream video</dt><dd id="resultStream">—</dd></div>
                   <div><dt>HDR / DV</dt><dd id="resultHdr">—</dd></div>
                 </dl>
-                <p class="result-meta" id="resultMeta">Metadata artist &amp; comment: KoRifCan</p>
+                <p class="result-meta" id="resultMeta">Metadata KoRifCan: mdta + iTunes</p>
                 <a class="btn btn-primary btn-download" id="btnDownload" href="#" download>
                   <svg class="icon" aria-hidden="true"><use href="#icon-download"></use></svg>
                   <span>Unduh video</span>
@@ -453,7 +453,7 @@
             <span class="feature-number">03</span>
             <span class="feature-icon feature-icon--pink"><svg class="icon" aria-hidden="true"><use href="#icon-tag"></use></svg></span>
             <h3>Tulis metadata KoRifCan</h3>
-            <p>Metadata mdta ditulis rapi: artist, comment, copyright, dan encoder. Copyright memakai 32 karakter pertama SHA-256 file asli sebagai sidik jari.</p>
+            <p>Metadata ditulis dalam dua format: mdta (artist, comment, copyright, te_is_reencode, encoder) dan atom iTunes (©ART, ©cmt, ©nam, ©wrt, ©alb, ©grp, cprt, ©too). Semua atom branding bernilai <strong>KoRifCan https://www.tiktok.com/@korifcan</strong>; copyright mdta memakai sidik jari SHA-256 file asli.</p>
           </article>
         </div>
         <div class="honesty-note" data-reveal>
@@ -528,6 +528,7 @@
                 <li>Satu track audio HQ ditambah satu track clone yang berbagi media data.</li>
                 <li>Movie timescale 1000; video edit list di-reset ke media time 0.</li>
                 <li>Metadata mdta: artist, comment, copyright, te_is_reencode, encoder.</li>
+                <li>Atom iTunes: ©ART, ©cmt, ©nam, ©wrt, ©alb, ©grp, cprt — semuanya <strong>KoRifCan https://www.tiktok.com/@korifcan</strong>; ©too tetap berisi encoder.</li>
                 <li>HDR/DV opsional: penanda container dan metadata statis sumber dipertahankan tanpa re-encode.</li>
               </ul>
             </div>
@@ -538,7 +539,7 @@
                 <li>Track HQ AAC-LC 48 kHz, stereo, target 346 kbps, dengan 19 frame tail.</li>
                 <li>Track HQ memiliki clone; total tiga track audio di dalam container.</li>
                 <li>Movie timescale 384000; edit list kompatibilitas memakai media time 2112.</li>
-                <li>Metadata mdta yang sama, ditulis untuk seluruh file.</li>
+                <li>Metadata mdta dan atom iTunes yang sama, ditulis untuk seluruh file.</li>
                 <li>HDR/DV opsional: penanda container dan metadata statis sumber dipertahankan tanpa re-encode.</li>
               </ul>
             </div>
@@ -677,8 +678,8 @@
     </div>
   </footer>
 
-  <script src="mp4-patcher.js?v=20261112c"></script>
+  <script src="mp4-patcher.js?v=20261113c"></script>
   <script src="ffmpeg/ffmpeg.js"></script>
-  <script src="app.js?v=20261112c"></script>
+  <script src="app.js?v=20261113c"></script>
 </body>
 </html>

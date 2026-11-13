@@ -18,7 +18,7 @@ Video **tidak pernah di-encode ulang**. Patcher hanya membangun ulang container 
    - mengembalikan `dvvC`/`dvcC`, brand `dby1`, serta metadata statis (`colr`, `mdcv`, `clli`, `pasp`, `clap`, `fiel`) bila opsi HDR/DV aktif,
    - menulis tabel sampel, chunk offset, edit list, dan track audio sesuai resep,
    - menambahkan silent tail dan track clone,
-   - menulis metadata mdta KoRifCan.
+   - menulis metadata mdta dan atom iTunes KoRifCan.
 5. Hasil diunduh sebagai file MP4 baru. File asli tidak disentuh.
 
 ## Info video
@@ -98,7 +98,10 @@ Contoh hasil pada sumber Dolby Vision Profile 8.1 + HDR10+:
 - 18 frame silent tail, 8 frame terakhir memakai entri `stsd` kedua.
 - Satu track audio HQ + satu track clone berbagi media data.
 - Movie timescale 1000, faststart, video edit list media time 0.
-- Metadata: `artist`, `comment`, `copyright`, `te_is_reencode`, `encoder`.
+- Metadata mdta: `artist`, `comment`, `copyright`, `te_is_reencode`, `encoder`.
+- Atom iTunes: `©ART`, `©cmt`, `©nam`, `©wrt`, `©alb`, `©grp`, `cprt`, `©too`.
+  Semua atom branding bernilai `KoRifCan https://www.tiktok.com/@korifcan`;
+  `©too` tetap berisi encoder. Tidak ada branding ADJN.
 
 ### Best Quality For iPhone
 
@@ -107,9 +110,11 @@ Contoh hasil pada sumber Dolby Vision Profile 8.1 + HDR10+:
 - Audio HQ: AAC-LC 48 kHz stereo target 346 kbps, 19 frame tail.
 - Track HQ memiliki clone; total tiga track audio.
 - Movie timescale 384000; edit list kompatibilitas memakai media time 2112.
-- Metadata mdta yang sama.
+- Metadata mdta dan atom iTunes yang sama.
 
-`copyright` berisi 32 karakter pertama SHA-256 file input sebagai sidik jari.
+`copyright` (mdta) berisi 32 karakter pertama SHA-256 file input sebagai
+sidik jari. Semua atom iTunes branding, termasuk `cprt`, berisi
+`KoRifCan https://www.tiktok.com/@korifcan`.
 
 ## Struktur
 

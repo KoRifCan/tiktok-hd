@@ -1,7 +1,7 @@
 /* KoRifCan container patcher worker.
  * A fresh worker is created for every run so large transfers never share
  * state between two consecutive processes. */
-importScripts('mp4-patcher.js');
+importScripts('mp4-patcher.js?v=20261113c');
 
 self.onmessage = function (event) {
   var data = event.data || {};
