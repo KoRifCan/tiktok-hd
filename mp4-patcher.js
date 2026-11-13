@@ -21,8 +21,8 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var ARTIST = 'KoRifCan https://www.tiktok.com/@korifcan';
-  var COMMENT = 'KoRifCan https://www.tiktok.com/@korifcan';
+  var ARTIST = 'KoRifCan';
+  var COMMENT = 'KoRifCan';
   var ENCODER = 'Lavf60.16.100';
 
   // Silent AAC packets recovered from the reference recipes.
@@ -1292,7 +1292,7 @@
 
   // iTunes-style atoms. These are separate from the mdta keys above because
   // players differ: some read mdta, some read ©ART/©cmt/…, and some read both.
-  // The values stay KoRifCan; no ADJN branding is written.
+  // The values stay plain KoRifCan; no ADJN branding is written.
   function buildItunesItem(type, text) {
     var value = utf8(String(text == null ? '' : text));
     var dataBox = box('data', concat([u32b(1), u32b(0), value]));

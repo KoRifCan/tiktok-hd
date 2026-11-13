@@ -1,12 +1,12 @@
 (function () {
   'use strict';
 
-  var ARTIST = 'KoRifCan https://www.tiktok.com/@korifcan';
-  var COMMENT = 'KoRifCan https://www.tiktok.com/@korifcan';
+  var ARTIST = 'KoRifCan';
+  var COMMENT = 'KoRifCan';
   var ENCODER = 'Lavf60.16.100';
   var CORE_URL = new URL('ffmpeg/ffmpeg-core.js', location.href).href;
   var WASM_URL = new URL('ffmpeg/ffmpeg-core.wasm', location.href).href;
-  var WORKER_URL = new URL('patch-worker.js?v=20261113c', location.href).href;
+  var WORKER_URL = new URL('patch-worker.js?v=20261113d', location.href).href;
   var STORE_KEY = 'korifcan.preset';
   var MAX_FILE_BYTES = 1.5 * 1024 * 1024 * 1024;
   var LARGE_FILE_BYTES = 500 * 1024 * 1024;

@@ -100,8 +100,8 @@ Contoh hasil pada sumber Dolby Vision Profile 8.1 + HDR10+:
 - Movie timescale 1000, faststart, video edit list media time 0.
 - Metadata mdta: `artist`, `comment`, `copyright`, `te_is_reencode`, `encoder`.
 - Atom iTunes: `©ART`, `©cmt`, `©nam`, `©wrt`, `©alb`, `©grp`, `cprt`, `©too`.
-  Semua atom branding bernilai `KoRifCan https://www.tiktok.com/@korifcan`;
-  `©too` tetap berisi encoder. Tidak ada branding ADJN.
+  Semua atom branding bernilai `KoRifCan`; `©too` tetap berisi encoder.
+  Tidak ada branding ADJN.
 
 ### Best Quality For iPhone
 
@@ -113,8 +113,7 @@ Contoh hasil pada sumber Dolby Vision Profile 8.1 + HDR10+:
 - Metadata mdta dan atom iTunes yang sama.
 
 `copyright` (mdta) berisi 32 karakter pertama SHA-256 file input sebagai
-sidik jari. Semua atom iTunes branding, termasuk `cprt`, berisi
-`KoRifCan https://www.tiktok.com/@korifcan`.
+sidik jari. Semua atom iTunes branding, termasuk `cprt`, berisi `KoRifCan`.
 
 ## Struktur
 
