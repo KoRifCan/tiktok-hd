@@ -39,7 +39,12 @@ hanya membaca metadata container; tidak ada file yang dikirim ke server.
 
 ## Upload ke TikTok Studio
 
-Setelah proses selesai, tombol **Upload ke TikTok Studio** membuka halaman
+Upload **wajib lewat TikTok Studio di browser**, bukan aplikasi TikTok.
+Aplikasi TikTok melakukan kompresi tambahan; TikTok Studio web tidak
+menambahkan kompresi aplikasi itu. Tidak perlu ekstensi browser tambahan, dan
+file hasil tetap MP4 biasa.
+
+Setelah proses selesai, tombol **Upload lewat TikTok Studio** membuka halaman
 upload TikTok Studio di tab baru. Unduh hasil lewat tombol **Unduh video**
 terlebih dahulu, lalu seret atau pilih file hasil unduhan di tab TikTok Studio.
 Browser tidak mengizinkan situs lain mengisi input file TikTok secara
