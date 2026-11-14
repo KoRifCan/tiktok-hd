@@ -12,7 +12,7 @@
   <meta property="og:site_name" content="KoRifCan">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css?v=20261113a">
-  <link rel="stylesheet" href="tiktok-stats.css?v=20261114c">
+  <link rel="stylesheet" href="tiktok-stats.css?v=20261114d">
 </head>
 <body>
   <svg class="svg-sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
@@ -444,14 +444,6 @@
               <h2 id="cek-tiktok-title">Cek videomu atau download video.</h2>
               <p>Lihat statistik publik dan metadata stream, lalu unduh videonya. Upload prep tetap 100% lokal.</p>
             </div>
-            <div class="stats-disclosure">
-              <span class="stats-disclosure-icon"><svg class="icon" aria-hidden="true"><use href="#icon-lock"></use></svg></span>
-              <div class="stats-disclosure-copy">
-                <strong>Privasi &amp; data</strong>
-                <p>Pengecekan mengirim URL ke TikWM dan mengambil sebagian file dari CDN TikTok. Upload prep tetap 100% lokal; tidak ada file yang diunggah ke server.</p>
-              </div>
-            </div>
-            <p class="stats-check-more"><a href="stats.html">Buka halaman khusus Cek TikTok</a></p>
           </div>
 
           <div class="stats-check-panel">
@@ -486,9 +478,18 @@
           </div>
         </div>
 
+        <div class="stats-disclosure stats-check-disclosure">
+          <span class="stats-disclosure-icon"><svg class="icon" aria-hidden="true"><use href="#icon-lock"></use></svg></span>
+          <div class="stats-disclosure-copy">
+            <strong>Privasi &amp; data</strong>
+            <p>Pengecekan mengirim URL ke TikWM dan mengambil sebagian file dari CDN TikTok. Upload prep tetap 100% lokal; tidak ada file yang diunggah ke server.</p>
+          </div>
+        </div>
+
         <div class="tt-result stats-check-result" id="ttResult" data-autoscroll="true" hidden>
           <div class="tt-result-head">
             <div class="eyebrow"><span class="eyebrow-dot"></span> Hasil pemeriksaan</div>
+            <span class="tt-method" id="ttMethod" hidden></span>
           </div>
           <div class="tt-result-grid">
             <div class="tt-media">
@@ -507,6 +508,12 @@
                   <span>Download video</span>
                 </a>
                 <p class="tt-download-note">File diambil dari CDN TikTok. Unduh hanya video yang kamu berhak gunakan.</p>
+                <div class="tt-download-progress" id="ttDownloadProgress" hidden>
+                  <div class="tt-download-track" id="ttDownloadTrack" role="progressbar" aria-label="Progres unduhan" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                    <span class="tt-download-fill" id="ttDownloadFill"></span>
+                  </div>
+                  <p class="tt-download-progress-text" id="ttDownloadProgressText"></p>
+                </div>
               </div>
               <div class="tt-stats" id="ttStats" aria-label="Statistik publik video"></div>
               <p class="tt-engagement" id="ttEngagement"></p>
@@ -771,6 +778,6 @@
   <script src="mp4-patcher.js?v=20261113d"></script>
   <script src="ffmpeg/ffmpeg.js"></script>
   <script src="app.js?v=20261113d"></script>
-  <script src="tiktok-stats.js?v=20261114c"></script>
+  <script src="tiktok-stats.js?v=20261114d"></script>
 </body>
 </html>

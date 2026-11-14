@@ -7,7 +7,7 @@ Situs statis untuk menyiapkan video sebelum diunggah ke TikTok, dengan dua resep
 
 Video **tidak pernah di-encode ulang**. Patcher hanya membangun ulang container MP4 di sekitar sampel video yang sudah ada. Semua proses berjalan di browser menggunakan ffmpeg.wasm dan WebAssembly; tidak ada file yang diunggah ke server.
 
-Ada juga halaman **Cek TikTok** (`stats.html`) untuk melihat statistik publik dan metadata stream video TikTok. Halaman itu terpisah dari alur upload prep dan punya pengungkapan privasi sendiri.
+Ada juga bagian **Cek TikTok** langsung di halaman utama untuk melihat statistik publik, metadata stream video TikTok, dan mengunduh videonya. Bagian ini terpisah dari alur upload prep dan punya pengungkapan privasi sendiri di bawah checker.
 
 ## Cara kerja
 
@@ -41,20 +41,20 @@ hanya membaca metadata container; tidak ada file yang dikirim ke server.
 
 ## Cek statistik, metadata & download TikTok
 
-Halaman `stats.html` ([live](https://korifcan.github.io/tiktok-hd/stats.html))
-menampilkan statistik publik dan metadata stream sebuah video TikTok. Form yang
-sama juga tersedia langsung di halaman utama
-([`index.html#cek-tiktok`](https://korifcan.github.io/tiktok-hd/#cek-tiktok)).
-Di halaman utama, setelah pengecekan berhasil, tombol **Download video**
-mengambil file dari CDN TikTok. Halaman `stats.html` tetap hanya membaca.
-Alur upload prep tidak berubah.
+Checker tersedia langsung di halaman utama, di bagian
+[`#cek-tiktok`](https://korifcan.github.io/tiktok-hd/#cek-tiktok), setelah Studio.
+Tidak ada halaman terpisah. Setelah pengecekan berhasil, tombol **Download video**
+mengambil file dari CDN TikTok dan menampilkan progres unduhan berupa persentase
+serta jumlah byte. Alur upload prep tidak berubah.
 
 | Bagian | Isi |
 | --- | --- |
 | Statistik publik | Tayangan, suka, komentar, bagikan, disimpan, dan engagement rate (suka + komentar + bagikan + disimpan ÷ tayangan). |
 | Video | Penulis dan @username, judul, tanggal, wilayah, cover, dan tautan ke TikTok. |
 | Stream | Resolusi, FPS, durasi, codec, bit depth/chroma, HDR/DV, bitrate video dan audio, serta ukuran file. |
-| Download | Tombol di halaman utama yang mengambil file MP4 dari stream CDN yang sama. |
+| Metode cek | Berapa banyak file yang dibaca untuk metadata: file penuh, 2 MB pertama, atau 2 MB terakhir. |
+| Kualitas stream | Label HD/SD dan status watermark dari stream yang dipilih TikWM. |
+| Download | Tombol di kartu hasil yang mengambil file MP4 dari stream CDN yang sama, dengan progres unduhan. |
 
 Urutan kerjanya:
 
@@ -65,16 +65,20 @@ Urutan kerjanya:
 3. `mp4-patcher.js` membaca `moov` lewat `inspectVideo`/`inspectHdr`. Tidak ada
    ffprobe, tidak ada re-encode, dan tidak ada backend.
 4. Bila tombol **Download video** ditekan, browser mengambil file penuh dari
-   URL stream yang sudah ditemukan, lalu menyimpannya sebagai MP4.
+   URL stream yang sudah ditemukan sambil memperbarui progres, lalu
+   menyimpannya sebagai MP4. Menekan tombol lagi saat unduhan berjalan akan
+   membatalkannya.
 
 Batas baca metadata sekitar 4 MB; video yang lebih besar dari itu tidak diunduh
-penuh saat pengecekan. Metadata yang tampil berasal dari stream yang diberikan
-TikWM, bukan dari file asli di perangkat pengunggah.
+penuh saat pengecekan. Metode yang dipakai ditampilkan di kartu hasil (badge dan
+baris **Metode cek**), bersama kualitas stream yang dipilih. Metadata yang tampil
+berasal dari stream yang diberikan TikWM, bukan dari file asli di perangkat
+pengunggah.
 
 ### Privasi
 
 Upload prep tetap **100% lokal** — file yang dipilih tidak dikirim ke mana pun.
-Di halaman statistik, URL video dikirim ke TikWM dan sebagian file diambil dari
+Di bagian cek TikTok, URL video dikirim ke TikWM dan sebagian file diambil dari
 CDN TikTok. Tombol download mengambil file dari CDN TikTok, bukan dari server
 KoRifCan. Tidak ada file yang diunggah ke server KoRifCan.
 
@@ -171,9 +175,8 @@ sidik jari. Semua atom iTunes branding, termasuk `cprt`, berisi `KoRifCan`.
 
 ```
 index.html          Halaman utama (upload prep + cek/download TikTok)
-stats.html          Halaman khusus cek statistik & metadata
 style.css           Desain dan layout
-tiktok-stats.css    Gaya cek statistik (halaman utama & stats.html)
+tiktok-stats.css    Gaya cek statistik di halaman utama
 app.js              UI, alur proses, ffmpeg.wasm
 tiktok-stats.js     Alur cek statistik, probe stream, dan download
 patch-worker.js     Worker untuk container patcher
@@ -201,7 +204,7 @@ Karena memakai WebAssembly dan WebCrypto, jalankan lewat HTTP lokal (bukan `file
 
 ```bash
 python3 -m http.server 8080
-# buka http://localhost:8080 atau http://localhost:8080/stats.html
+# buka http://localhost:8080 (bagian Cek TikTok ada di #cek-tiktok)
 ```
 
 Tidak ada build step dan tidak ada dependensi npm.

@@ -17,7 +17,7 @@
   var MAX_READ_BYTES = 4 * 1024 * 1024;
   var CACHE_TTL = 10 * 60 * 1000;
   var CACHE_PREFIX = 'korifcan.tiktokStats.v1.';
-  var CACHE_VERSION = 1;
+  var CACHE_VERSION = 2;
   var RESOLVE_TIMEOUT = 15000;
   var PROBE_TIMEOUT = 25000;
   var MAX_BLOB_DOWNLOAD = 200 * 1024 * 1024;
@@ -34,7 +34,9 @@
     downloadUrl: '',
     downloadName: '',
     downloadSize: 0,
-    downloadBusy: false
+    downloadBusy: false,
+    downloadController: null,
+    downloadToken: 0
   };
 
   var el = {};
@@ -1057,7 +1059,8 @@
             totalSize: probe.totalSize,
             bytesRead: probe.bytesRead,
             rangeHonored: probe.rangeHonored,
-            watermark: candidate.watermark
+            watermark: candidate.watermark,
+            quality: candidate.label
           };
           break;
         }
@@ -1298,6 +1301,39 @@
     rows.push({ label: label, value: value, title: title || '' });
   }
 
+  function methodLabel(method) {
+    if (method === 'full') return 'File penuh';
+    if (method === 'tail') return '2 MB terakhir';
+    if (method === 'head') return '2 MB pertama';
+    return 'Statistik saja';
+  }
+
+  function methodDetail(stream) {
+    if (!stream || !stream.info || !stream.info.found) {
+      return 'Statistik saja · metadata stream tidak tersedia';
+    }
+    var parts = [methodLabel(stream.method)];
+    var total = toNumber(stream.totalSize);
+    var read = toNumber(stream.bytesRead);
+    if (stream.method === 'full' && total > 0) {
+      parts.push(formatBytes(total) + ' dibaca');
+    } else if (read > 0) {
+      parts.push(formatBytes(read) + ' dibaca');
+    }
+    if (stream.rangeHonored === false) parts.push('Range tidak didukung');
+    return parts.join(' · ');
+  }
+
+  function streamQualityLabel(stream) {
+    if (!stream || !stream.info || !stream.info.found) return '—';
+    var quality = cleanText(stream.quality);
+    if (quality === 'HD') return stream.watermark ? 'HD · watermark' : 'HD · tanpa watermark';
+    if (quality === 'SD') return stream.watermark ? 'SD · watermark' : 'SD · tanpa watermark';
+    if (quality === 'watermark') return 'Watermark';
+    if (quality) return quality + (stream.watermark ? ' · watermark' : '');
+    return stream.watermark ? 'Watermark' : 'Tanpa watermark';
+  }
+
   function buildDetails(result) {
     var rows = [];
     var stream = result && result.stream;
@@ -1317,6 +1353,8 @@
       addDetail(rows, 'Audio', '—');
       addDetail(rows, 'Ukuran file', '—');
       addDetail(rows, 'Sampel video', '—');
+      addDetail(rows, 'Metode cek', methodDetail(stream));
+      addDetail(rows, 'Kualitas stream', streamQualityLabel(stream));
       addDetail(rows, 'Sumber stream', 'Tidak tersedia');
       return rows;
     }
@@ -1356,6 +1394,8 @@
       addDetail(rows, 'Rotasi', toNumber(info.rotation) + '°');
     }
 
+    addDetail(rows, 'Metode cek', methodDetail(stream));
+    addDetail(rows, 'Kualitas stream', streamQualityLabel(stream));
     addDetail(rows, 'Sumber stream', stream.watermark
       ? 'CDN TikTok · watermark'
       : 'CDN TikTok · tanpa watermark');
@@ -1389,6 +1429,14 @@
     return 'Sumber: TikWM · statistik saja';
   }
 
+  function renderMethod(result) {
+    if (!el.method) return;
+    var stream = result && result.stream;
+    el.method.textContent = 'Metode: ' + methodLabel(stream && stream.method);
+    el.method.title = methodDetail(stream);
+    el.method.hidden = false;
+  }
+
   function downloadFileName(result) {
     var author = cleanText(result && result.author && result.author.uniqueId).replace(/^@+/, '');
     var id = cleanText(result && result.id);
@@ -1398,11 +1446,65 @@
     return base.replace(/[^a-z0-9._-]+/gi, '-').replace(/-+/g, '-') + '.mp4';
   }
 
+  function resetDownloadProgress() {
+    if (el.downloadProgress) el.downloadProgress.hidden = true;
+    if (el.downloadTrack) {
+      el.downloadTrack.classList.remove('is-indeterminate');
+      el.downloadTrack.setAttribute('aria-valuenow', '0');
+      el.downloadTrack.removeAttribute('aria-valuetext');
+    }
+    if (el.downloadFill) el.downloadFill.style.width = '0%';
+    setText(el.downloadProgressText, '');
+  }
+
+  function showDownloadProgress(done, total) {
+    if (!el.downloadProgress) return 0;
+    el.downloadProgress.hidden = false;
+    var received = Math.max(0, toNumber(done));
+    var size = Math.max(0, toNumber(total));
+    var percent = size > 0 ? Math.max(0, Math.min(100, Math.floor((received / size) * 100))) : 0;
+    if (size > 0) {
+      if (el.downloadTrack) {
+        el.downloadTrack.classList.remove('is-indeterminate');
+        el.downloadTrack.setAttribute('aria-valuenow', String(percent));
+        el.downloadTrack.setAttribute('aria-valuetext', percent + '% — ' + formatBytes(received) + ' dari ' + formatBytes(size));
+      }
+      if (el.downloadFill) el.downloadFill.style.width = percent + '%';
+      setText(el.downloadProgressText, formatBytes(received) + ' dari ' + formatBytes(size) + ' · ' + percent + '%');
+    } else {
+      if (el.downloadTrack) {
+        el.downloadTrack.classList.add('is-indeterminate');
+        el.downloadTrack.removeAttribute('aria-valuenow');
+        el.downloadTrack.setAttribute('aria-valuetext', formatBytes(received) + ' terunduh');
+      }
+      if (el.downloadFill) el.downloadFill.style.width = '';
+      setText(el.downloadProgressText, formatBytes(received) + ' terunduh…');
+    }
+    return percent;
+  }
+
+  function stopDownload(resetProgress) {
+    if (state.downloadController) {
+      try { state.downloadController.abort(); } catch (err) { /* ignore */ }
+      state.downloadController = null;
+    }
+    state.downloadBusy = false;
+    state.downloadToken++;
+    if (el.download) {
+      el.download.removeAttribute('aria-busy');
+      el.download.removeAttribute('title');
+      var label = el.download.querySelector('span');
+      if (label) label.textContent = 'Download video';
+    }
+    if (resetProgress) resetDownloadProgress();
+  }
+
   function renderDownload(result) {
     if (!el.downloadRow || !el.download) return;
     var stream = result && result.stream;
     var url = stream && stream.url;
     if (!url) {
+      stopDownload(true);
       state.downloadUrl = '';
       state.downloadName = '';
       state.downloadSize = 0;
@@ -1411,6 +1513,7 @@
       el.download.removeAttribute('download');
       return;
     }
+    if (url !== state.downloadUrl || state.downloadBusy) stopDownload(true);
     state.downloadUrl = url;
     state.downloadName = downloadFileName(result);
     state.downloadSize = toNumber(stream && stream.totalSize);
@@ -1422,7 +1525,12 @@
   async function handleDownload(event) {
     if (!state.downloadUrl) return;
     if (event) event.preventDefault();
-    if (state.downloadBusy) return;
+
+    if (state.downloadBusy) {
+      stopDownload(true);
+      setStatus('Unduhan dibatalkan.', 'warning');
+      return;
+    }
 
     if (state.downloadSize > MAX_BLOB_DOWNLOAD) {
       try {
@@ -1434,38 +1542,122 @@
       return;
     }
 
+    var url = state.downloadUrl;
+    var name = state.downloadName || 'tiktok-video.mp4';
+    var expected = toNumber(state.downloadSize);
+    var token = ++state.downloadToken;
+    var controller = typeof global.AbortController === 'function' ? new global.AbortController() : null;
+    state.downloadController = controller;
     state.downloadBusy = true;
+
     var label = el.download ? el.download.querySelector('span') : null;
     var original = label ? label.textContent : '';
     if (label) label.textContent = 'Menyiapkan…';
-    if (el.download) el.download.setAttribute('aria-busy', 'true');
+    if (el.download) {
+      el.download.setAttribute('aria-busy', 'true');
+      el.download.title = 'Klik untuk membatalkan unduhan';
+    }
+    showDownloadProgress(0, expected);
 
     try {
-      var response = await fetch(state.downloadUrl, { credentials: 'omit', mode: 'cors' });
+      var response = await fetch(url, {
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'omit',
+        cache: 'no-store',
+        signal: controller ? controller.signal : undefined
+      });
       if (!response.ok) throw new Error('HTTP ' + response.status);
-      var blob = await response.blob();
+      if (token !== state.downloadToken) return;
+
+      var total = responseContentLength(response) || expected;
+      if (total > MAX_BLOB_DOWNLOAD) {
+        if (response.body && typeof response.body.cancel === 'function') {
+          try { await response.body.cancel(); } catch (cancelErr) { /* ignore */ }
+        }
+        try {
+          global.open(url, '_blank', 'noopener');
+          setStatus('File besar; video dibuka di tab baru.', 'warning');
+        } catch (openErr) {
+          setStatus('Tidak bisa membuka video. Coba lagi.', 'error');
+        }
+        resetDownloadProgress();
+        return;
+      }
+      var blob;
+      if (response.body && typeof response.body.getReader === 'function') {
+        var reader = response.body.getReader();
+        var chunks = [];
+        var received = 0;
+        var lastPaintBytes = -1;
+        var lastPaintAt = 0;
+        if (label) label.textContent = total > 0 ? 'Mengunduh… 0%' : 'Mengunduh…';
+        while (true) {
+          var step = await reader.read();
+          if (token !== state.downloadToken) {
+            try { await reader.cancel(); } catch (cancelErr) { /* ignore */ }
+            return;
+          }
+          if (step.done) break;
+          var value = step.value;
+          if (!value) continue;
+          var chunk = value instanceof Uint8Array ? value : new Uint8Array(value);
+          chunks.push(chunk);
+          received += chunk.length;
+          var now = Date.now();
+          if (lastPaintBytes < 0 || received === total ||
+              received - lastPaintBytes >= 32768 || now - lastPaintAt >= 120) {
+            var percent = showDownloadProgress(received, total);
+            if (label && total > 0) label.textContent = 'Mengunduh… ' + percent + '%';
+            lastPaintBytes = received;
+            lastPaintAt = now;
+          }
+        }
+        if (token !== state.downloadToken) return;
+        showDownloadProgress(received, total || received);
+        blob = new Blob(chunks, {
+          type: (response.headers && response.headers.get('content-type')) || 'video/mp4'
+        });
+      } else {
+        if (label) label.textContent = 'Mengunduh…';
+        blob = await response.blob();
+      }
+
+      if (token !== state.downloadToken) return;
       if (!blob || !blob.size) throw new Error('File kosong.');
+      if (label) label.textContent = 'Menyimpan…';
+      showDownloadProgress(blob.size, blob.size || total);
 
       var objectUrl = URL.createObjectURL(blob);
       var link = document.createElement('a');
       link.href = objectUrl;
-      link.download = state.downloadName || 'tiktok-video.mp4';
+      link.download = name;
       document.body.appendChild(link);
       link.click();
       link.remove();
       setTimeout(function () { URL.revokeObjectURL(objectUrl); }, 30000);
+      setText(el.downloadProgressText, formatBytes(blob.size) + ' · selesai');
       setStatus('Video berhasil diunduh.', 'success');
     } catch (err) {
+      if (token !== state.downloadToken) return;
+      if (err && err.name === 'AbortError') return;
+      resetDownloadProgress();
       try {
-        global.open(state.downloadUrl, '_blank', 'noopener');
+        global.open(url, '_blank', 'noopener');
         setStatus('Browser tidak bisa mengunduh langsung; video dibuka di tab baru.', 'warning');
       } catch (openErr) {
         setStatus('Tidak bisa mengunduh video. Coba lagi.', 'error');
       }
     } finally {
-      state.downloadBusy = false;
-      if (el.download) el.download.removeAttribute('aria-busy');
-      if (label) label.textContent = original;
+      if (token === state.downloadToken) {
+        state.downloadBusy = false;
+        state.downloadController = null;
+        if (el.download) {
+          el.download.removeAttribute('aria-busy');
+          el.download.removeAttribute('title');
+        }
+        if (label) label.textContent = original;
+      }
     }
   }
 
@@ -1478,6 +1670,7 @@
     renderLink(result);
     renderStats(result && result.stats);
     setText(el.engagement, 'Interaksi: ' + formatPercent(result && result.engagementRate));
+    renderMethod(result);
     renderDetails(result);
     setText(el.source, sourceNote(result && result.stream));
     renderDownload(result);
@@ -1574,10 +1767,15 @@
       link: byId('ttLink'),
       stats: byId('ttStats'),
       engagement: byId('ttEngagement'),
+      method: byId('ttMethod'),
       details: byId('ttDetails'),
       source: byId('ttSource'),
       downloadRow: byId('ttDownloadRow'),
-      download: byId('ttDownload')
+      download: byId('ttDownload'),
+      downloadProgress: byId('ttDownloadProgress'),
+      downloadTrack: byId('ttDownloadTrack'),
+      downloadFill: byId('ttDownloadFill'),
+      downloadProgressText: byId('ttDownloadProgressText')
     };
 
     if (!el.form) return;
