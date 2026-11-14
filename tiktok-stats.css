@@ -388,6 +388,68 @@
 }
 
 /* --------------------------------------------------------------------------
+   Embedded checker on the homepage
+   -------------------------------------------------------------------------- */
+
+.hero-check {
+  max-width: 620px;
+  margin: 0 0 24px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 18px 50px -38px rgba(47, 35, 80, 0.45);
+  scroll-margin-top: 96px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.hero-check .tt-status {
+  margin-top: 10px;
+}
+
+.hero-check .tt-hint {
+  font-size: 0.69rem;
+}
+
+.hero-check-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 10px 0 0;
+  color: var(--muted-2);
+  font-size: 0.67rem;
+  line-height: 1.5;
+}
+
+.hero-check-note .icon {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  margin-top: 1px;
+  color: var(--cyan);
+}
+
+.hero-check-note a {
+  color: var(--violet);
+  font-weight: 700;
+}
+
+.stats-embed-result-section {
+  padding: 0 0 14px;
+}
+
+.stats-embed-result-section .tt-result {
+  margin-top: 10px;
+}
+
+@media (min-width: 560px) {
+  .hero-check {
+    padding: 16px;
+  }
+}
+
+/* --------------------------------------------------------------------------
    Result card
    -------------------------------------------------------------------------- */
 

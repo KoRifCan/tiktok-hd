@@ -42,8 +42,11 @@ hanya membaca metadata container; tidak ada file yang dikirim ke server.
 ## Cek statistik & metadata TikTok
 
 Halaman `stats.html` ([live](https://korifcan.github.io/tiktok-hd/stats.html))
-menampilkan statistik publik dan metadata stream sebuah video TikTok. Halaman
-ini hanya membaca; tidak ada tombol unduh dan alur upload prep tidak berubah.
+menampilkan statistik publik dan metadata stream sebuah video TikTok. Form yang
+sama juga tersedia langsung di halaman utama
+([`index.html#cek-tiktok`](https://korifcan.github.io/tiktok-hd/#cek-tiktok)).
+Halaman ini hanya membaca; tidak ada tombol unduh dan alur upload prep tidak
+berubah.
 
 | Bagian | Isi |
 | --- | --- |
@@ -162,10 +165,10 @@ sidik jari. Semua atom iTunes branding, termasuk `cprt`, berisi `KoRifCan`.
 ## Struktur
 
 ```
-index.html          Halaman utama (upload prep)
-stats.html          Halaman cek statistik & metadata
+index.html          Halaman utama (upload prep + form cek TikTok)
+stats.html          Halaman khusus cek statistik & metadata
 style.css           Desain dan layout
-tiktok-stats.css    Gaya halaman statistik
+tiktok-stats.css    Gaya cek statistik (halaman utama & stats.html)
 app.js              UI, alur proses, ffmpeg.wasm
 tiktok-stats.js     Alur cek statistik & probe stream
 patch-worker.js     Worker untuk container patcher

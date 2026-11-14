@@ -1396,6 +1396,13 @@
     renderDetails(result);
     setText(el.source, sourceNote(result && result.stream));
     el.result.hidden = false;
+    if (el.result.hasAttribute('data-autoscroll')) {
+      try {
+        el.result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (err) {
+        try { el.result.scrollIntoView(); } catch (fallbackErr) { /* ignore */ }
+      }
+    }
   }
 
   async function handleSubmit(event) {
