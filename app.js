@@ -2,7 +2,6 @@
   'use strict';
 
   var ARTIST = 'KoRifCan';
-  var COMMENT = 'KoRifCan';
   var ENCODER = 'Lavf60.16.100';
   var CORE_URL = new URL('ffmpeg/ffmpeg-core.js', location.href).href;
   var WASM_URL = new URL('ffmpeg/ffmpeg-core.wasm', location.href).href;
@@ -942,7 +941,7 @@
       var patched = await runPatcher(outBuffer, {
         preset: preset,
         artist: ARTIST,
-        comment: COMMENT,
+        comment: preset === 'iphone' ? 'Best Quality For iPhone' : 'Best Quality',
         copyright: copyright,
         teIsReencode: '1',
         encoder: ENCODER,

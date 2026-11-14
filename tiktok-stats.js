@@ -17,7 +17,7 @@
   var MAX_READ_BYTES = 4 * 1024 * 1024;
   var CACHE_TTL = 10 * 60 * 1000;
   var CACHE_PREFIX = 'korifcan.tiktokStats.v1.';
-  var CACHE_VERSION = 2;
+  var CACHE_VERSION = 4;
   var RESOLVE_TIMEOUT = 15000;
   var PROBE_TIMEOUT = 25000;
   var MAX_BLOB_DOWNLOAD = 200 * 1024 * 1024;
@@ -73,6 +73,167 @@
       hash = Math.imul(hash, 16777619);
     }
     return (hash >>> 0).toString(36);
+  }
+
+  function readU32(bytes, offset) {
+    return bytes[offset] * 16777216 + bytes[offset + 1] * 65536 +
+      bytes[offset + 2] * 256 + bytes[offset + 3];
+  }
+
+  function readBoxType(bytes, offset) {
+    return String.fromCharCode(bytes[offset], bytes[offset + 1], bytes[offset + 2], bytes[offset + 3]);
+  }
+
+  function readBoxAt(bytes, offset, end) {
+    if (offset < 0 || offset + 8 > end) return null;
+    var size = readU32(bytes, offset);
+    var typeValue = readU32(bytes, offset + 4);
+    var header = 8;
+    if (size === 1) {
+      if (offset + 16 > end) return null;
+      size = readU32(bytes, offset + 8) * 4294967296 + readU32(bytes, offset + 12);
+      header = 16;
+    } else if (size === 0) {
+      size = end - offset;
+    }
+    if (size < header) return null;
+    var boxEnd = offset + size;
+    if (boxEnd > end) boxEnd = end;
+    return {
+      type: readBoxType(bytes, offset + 4),
+      typeValue: typeValue,
+      start: offset,
+      payloadStart: offset + header,
+      end: boxEnd
+    };
+  }
+
+  function readBoxChildren(bytes, start, end) {
+    var boxes = [];
+    var offset = start;
+    while (offset + 8 <= end) {
+      var box = readBoxAt(bytes, offset, end);
+      if (!box || box.end <= offset) break;
+      boxes.push(box);
+      offset = box.end;
+    }
+    return boxes;
+  }
+
+  function findChildBox(boxes, type) {
+    for (var i = 0; i < boxes.length; i++) {
+      if (boxes[i].type === type) return boxes[i];
+    }
+    return null;
+  }
+
+  function findMoovBox(bytes) {
+    var top = readBoxChildren(bytes, 0, bytes.length);
+    var moov = findChildBox(top, 'moov');
+    if (moov) return moov;
+    for (var i = 4; i + 8 <= bytes.length; i++) {
+      if (bytes[i] !== 0x6d || bytes[i + 1] !== 0x6f ||
+          bytes[i + 2] !== 0x6f || bytes[i + 3] !== 0x76) continue;
+      var candidate = readBoxAt(bytes, i - 4, bytes.length);
+      if (candidate && candidate.type === 'moov') return candidate;
+    }
+    return null;
+  }
+
+  function readUtf8Bytes(bytes, start, end) {
+    if (end <= start) return '';
+    var text = '';
+    try {
+      if (typeof global.TextDecoder === 'function') {
+        text = new global.TextDecoder('utf-8').decode(bytes.subarray(start, end));
+      }
+    } catch (err) {
+      text = '';
+    }
+    if (!text) {
+      for (var i = start; i < end; i++) text += String.fromCharCode(bytes[i]);
+    }
+    return text.replace(/\0/g, '');
+  }
+
+  function readDataBoxText(bytes, box) {
+    if (!box || box.payloadStart + 8 > box.end) return '';
+    var type = readU32(bytes, box.payloadStart);
+    var start = box.payloadStart + 8;
+    if (type === 2) {
+      var text = '';
+      for (var i = start; i + 1 < box.end; i += 2) {
+        text += String.fromCharCode((bytes[i] << 8) | bytes[i + 1]);
+      }
+      return text.replace(/\0/g, '');
+    }
+    return readUtf8Bytes(bytes, start, box.end);
+  }
+
+  function readMetadataKeys(bytes, box) {
+    var keys = [];
+    if (!box || box.payloadStart + 8 > box.end) return keys;
+    var count = readU32(bytes, box.payloadStart + 4);
+    var offset = box.payloadStart + 8;
+    for (var i = 0; i < count && offset + 8 <= box.end; i++) {
+      var size = readU32(bytes, offset);
+      if (size < 8 || offset + size > box.end) break;
+      keys.push(readUtf8Bytes(bytes, offset + 8, offset + size));
+      offset += size;
+    }
+    return keys;
+  }
+
+  function readMetaValues(bytes, metaBox) {
+    var values = { artist: '', comment: '' };
+    if (!metaBox) return values;
+    var children = readBoxChildren(bytes, metaBox.payloadStart + 4, metaBox.end);
+    var keysBox = findChildBox(children, 'keys');
+    var ilst = findChildBox(children, 'ilst');
+    if (!ilst) return values;
+    var keys = keysBox ? readMetadataKeys(bytes, keysBox) : [];
+    var items = readBoxChildren(bytes, ilst.payloadStart, ilst.end);
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i];
+      var key = item.typeValue > 0 && item.typeValue <= keys.length
+        ? keys[item.typeValue - 1]
+        : item.type;
+      if (key !== 'artist' && key !== 'comment' &&
+          key !== '\u00a9ART' && key !== '\u00a9cmt') continue;
+      var data = findChildBox(readBoxChildren(bytes, item.payloadStart, item.end), 'data');
+      if (!data) continue;
+      var value = cleanText(readDataBoxText(bytes, data));
+      if (!value) continue;
+      if (key === 'artist' || key === '\u00a9ART') {
+        if (!values.artist) values.artist = value;
+      } else if (!values.comment) {
+        values.comment = value;
+      }
+    }
+    return values;
+  }
+
+  function readRecipeMetadata(bytes) {
+    var values = { artist: '', comment: '' };
+    var moov = findMoovBox(bytes);
+    if (!moov) return values;
+    var moovChildren = readBoxChildren(bytes, moov.payloadStart, moov.end);
+    var metas = [];
+    var direct = findChildBox(moovChildren, 'meta');
+    if (direct) metas.push(direct);
+    var udta = findChildBox(moovChildren, 'udta');
+    if (udta) {
+      var udtaChildren = readBoxChildren(bytes, udta.payloadStart, udta.end);
+      for (var i = 0; i < udtaChildren.length; i++) {
+        if (udtaChildren[i].type === 'meta') metas.push(udtaChildren[i]);
+      }
+    }
+    for (var m = 0; m < metas.length; m++) {
+      var parsed = readMetaValues(bytes, metas[m]);
+      if (!values.artist && parsed.artist) values.artist = parsed.artist;
+      if (!values.comment && parsed.comment) values.comment = parsed.comment;
+    }
+    return values;
   }
 
   function assertNotAborted(signal) {
@@ -263,6 +424,17 @@
     return formatDecimal(n, digits) + ' ' + units[i];
   }
 
+  function formatSpeed(value) {
+    var n = Math.max(0, toNumber(value));
+    if (!n) return '';
+    if (n >= 1024 * 1024) {
+      var mbps = n / (1024 * 1024);
+      return formatDecimal(mbps, mbps >= 10 ? 0 : 1) + ' MB/s';
+    }
+    if (n >= 1024) return formatNumber(Math.round(n / 1024)) + ' KB/s';
+    return formatNumber(Math.round(n)) + ' B/s';
+  }
+
   function formatBitrate(value) {
     var bps = Math.max(0, toNumber(value));
     if (!bps) return '—';
@@ -450,6 +622,7 @@
     number: formatNumber,
     compact: formatCompact,
     bytes: formatBytes,
+    speed: formatSpeed,
     bitrate: formatBitrate,
     duration: formatDuration,
     fps: formatFps,
@@ -878,6 +1051,7 @@
     var headRead = await readCapped(headResponse, MAX_READ_BYTES, signal);
     var bytesRead = headRead.bytes.length;
     var rangeHonored = headResponse.status === 206;
+    var recipeMeta = readRecipeMetadata(headRead.bytes);
 
     if (!totalSize && headResponse.status === 200) {
       var fromHead = responseContentLength(headResponse);
@@ -900,6 +1074,11 @@
       var tailResponse = await requestRange(url, start, end, signal);
       var tailRead = await readCapped(tailResponse, MAX_READ_BYTES, signal);
       bytesRead += tailRead.bytes.length;
+      var tailMeta = readRecipeMetadata(tailRead.bytes);
+      recipeMeta = {
+        artist: recipeMeta.artist || tailMeta.artist,
+        comment: recipeMeta.comment || tailMeta.comment
+      };
       var tailInfo = inspectVideoSafe(patcher, tailRead.bytes);
       if (tailInfo && tailInfo.found) {
         found = true;
@@ -920,6 +1099,8 @@
       totalSize: totalSize,
       bytesRead: bytesRead,
       rangeHonored: rangeHonored,
+      recipeArtist: recipeMeta.artist,
+      recipeComment: recipeMeta.comment,
       url: url
     };
   }
@@ -1060,7 +1241,9 @@
             bytesRead: probe.bytesRead,
             rangeHonored: probe.rangeHonored,
             watermark: candidate.watermark,
-            quality: candidate.label
+            quality: candidate.label,
+            recipeArtist: probe.recipeArtist,
+            recipeComment: probe.recipeComment
           };
           break;
         }
@@ -1334,12 +1517,93 @@
     return stream.watermark ? 'Watermark' : 'Tanpa watermark';
   }
 
+  function recipeTrackFallback(stream) {
+    var tracks = toNumber(stream && stream.info && stream.info.audio && stream.info.audio.trackCount);
+    if (tracks >= 3) return 'Best Quality For iPhone';
+    if (tracks === 2) return 'Best Quality';
+    return '';
+  }
+
+  function recipeInfo(stream) {
+    var found = !!(stream && stream.info && stream.info.found);
+    var artist = cleanText(stream && stream.recipeArtist);
+    var comment = cleanText(stream && stream.recipeComment);
+
+    if (!found) {
+      return {
+        state: 'unknown',
+        method: 'Tidak bisa dicek',
+        recipe: 'Tidak bisa dicek',
+        methodTitle: 'Metadata stream tidak tersedia.',
+        recipeTitle: 'Metadata stream tidak tersedia.',
+        detail: 'Metadata stream tidak tersedia, jadi jejak resep tidak bisa diperiksa.'
+      };
+    }
+
+    var artistIsBrand = /^korifcan\b/i.test(artist);
+    var method = artistIsBrand ? 'KoRifCan' : artist;
+    var recipe = comment;
+    var inferred = false;
+    var legacyComment = /^korifcan\b/i.test(recipe);
+    if (legacyComment) recipe = '';
+    if (!recipe && (artistIsBrand || legacyComment)) {
+      recipe = recipeTrackFallback(stream);
+      inferred = !!recipe;
+    }
+    if (!method && legacyComment) method = 'KoRifCan';
+
+    if (!method && !recipe) {
+      return {
+        state: 'none',
+        method: 'Tidak terdeteksi',
+        recipe: 'Tidak terdeteksi',
+        methodTitle: 'Metadata artist tidak ditemukan di stream.',
+        recipeTitle: 'Metadata comment tidak ditemukan di stream.',
+        detail: 'Metadata artist/comment KoRifCan tidak ditemukan pada stream ini. TikTok biasanya menghapus metadata setelah upload, jadi ini bukan bukti video tidak pernah memakai resep KoRifCan.'
+      };
+    }
+
+    if (!method) method = 'Tidak terdeteksi';
+    if (!recipe) recipe = 'Tidak diketahui';
+
+    var methodTitle = artist
+      ? 'Metadata artist: ' + artist
+      : 'Metadata artist tidak ditemukan di stream.';
+    var recipeTitle;
+    if (inferred) {
+      recipeTitle = 'Metadata comment tidak berisi nama resep; disimpulkan dari jumlah trek audio.';
+    } else if (comment) {
+      recipeTitle = 'Metadata comment: ' + comment;
+    } else {
+      recipeTitle = 'Metadata comment tidak ditemukan di stream.';
+    }
+
+    var parts = [];
+    if (artist) parts.push('artist = ' + artist);
+    if (comment) parts.push('comment = ' + comment);
+    var detail = 'Metadata MP4' + (parts.length ? ' (' + parts.join(' · ') + ')' : '') +
+      ' dibaca langsung dari stream.';
+    if (inferred) {
+      detail += ' Nama resep disimpulkan dari jumlah trek audio karena comment tidak berisi nama resep.';
+    }
+
+    return {
+      state: 'detected',
+      method: method,
+      recipe: recipe,
+      methodTitle: methodTitle,
+      recipeTitle: recipeTitle,
+      detail: detail
+    };
+  }
+
   function buildDetails(result) {
     var rows = [];
     var stream = result && result.stream;
     var info = stream && stream.info;
     var video = (info && info.video) || {};
     var hdr = stream && stream.hdr;
+    var recipe = recipeInfo(stream);
 
     if (!stream || !info || !info.found) {
       addDetail(rows, 'Resolusi', '—');
@@ -1353,7 +1617,9 @@
       addDetail(rows, 'Audio', '—');
       addDetail(rows, 'Ukuran file', '—');
       addDetail(rows, 'Sampel video', '—');
-      addDetail(rows, 'Metode cek', methodDetail(stream));
+      addDetail(rows, 'Metode', recipe.method, recipe.methodTitle);
+      addDetail(rows, 'Resep', recipe.recipe, recipe.recipeTitle);
+      addDetail(rows, 'Cara cek', methodDetail(stream));
       addDetail(rows, 'Kualitas stream', streamQualityLabel(stream));
       addDetail(rows, 'Sumber stream', 'Tidak tersedia');
       return rows;
@@ -1394,7 +1660,9 @@
       addDetail(rows, 'Rotasi', toNumber(info.rotation) + '°');
     }
 
-    addDetail(rows, 'Metode cek', methodDetail(stream));
+    addDetail(rows, 'Metode', recipe.method, recipe.methodTitle);
+    addDetail(rows, 'Resep', recipe.recipe, recipe.recipeTitle);
+    addDetail(rows, 'Cara cek', methodDetail(stream));
     addDetail(rows, 'Kualitas stream', streamQualityLabel(stream));
     addDetail(rows, 'Sumber stream', stream.watermark
       ? 'CDN TikTok · watermark'
@@ -1431,10 +1699,24 @@
 
   function renderMethod(result) {
     if (!el.method) return;
-    var stream = result && result.stream;
-    el.method.textContent = 'Metode: ' + methodLabel(stream && stream.method);
-    el.method.title = methodDetail(stream);
+    var recipe = recipeInfo(result && result.stream);
+    var state = recipe.state;
+    if (state === 'detected' && recipe.method === 'Tidak terdeteksi') state = 'none';
+    el.method.textContent = 'Metode: ' + recipe.method;
+    el.method.title = recipe.methodTitle;
+    el.method.setAttribute('data-state', state);
     el.method.hidden = false;
+  }
+
+  function renderRecipe(result) {
+    if (!el.recipe) return;
+    var recipe = recipeInfo(result && result.stream);
+    var state = recipe.state;
+    if (state === 'detected' && recipe.recipe === 'Tidak diketahui') state = 'unknown';
+    el.recipe.textContent = 'Resep: ' + recipe.recipe;
+    el.recipe.title = recipe.recipeTitle;
+    el.recipe.setAttribute('data-state', state);
+    el.recipe.hidden = false;
   }
 
   function downloadFileName(result) {
@@ -1457,28 +1739,30 @@
     setText(el.downloadProgressText, '');
   }
 
-  function showDownloadProgress(done, total) {
+  function showDownloadProgress(done, total, speed) {
     if (!el.downloadProgress) return 0;
     el.downloadProgress.hidden = false;
     var received = Math.max(0, toNumber(done));
     var size = Math.max(0, toNumber(total));
+    var rate = formatSpeed(speed);
+    var rateSuffix = rate ? ' · ' + rate : '';
     var percent = size > 0 ? Math.max(0, Math.min(100, Math.floor((received / size) * 100))) : 0;
     if (size > 0) {
       if (el.downloadTrack) {
         el.downloadTrack.classList.remove('is-indeterminate');
         el.downloadTrack.setAttribute('aria-valuenow', String(percent));
-        el.downloadTrack.setAttribute('aria-valuetext', percent + '% — ' + formatBytes(received) + ' dari ' + formatBytes(size));
+        el.downloadTrack.setAttribute('aria-valuetext', percent + '% — ' + formatBytes(received) + ' dari ' + formatBytes(size) + (rate ? ' — ' + rate : ''));
       }
       if (el.downloadFill) el.downloadFill.style.width = percent + '%';
-      setText(el.downloadProgressText, formatBytes(received) + ' dari ' + formatBytes(size) + ' · ' + percent + '%');
+      setText(el.downloadProgressText, formatBytes(received) + ' dari ' + formatBytes(size) + ' · ' + percent + '%' + rateSuffix);
     } else {
       if (el.downloadTrack) {
         el.downloadTrack.classList.add('is-indeterminate');
         el.downloadTrack.removeAttribute('aria-valuenow');
-        el.downloadTrack.setAttribute('aria-valuetext', formatBytes(received) + ' terunduh');
+        el.downloadTrack.setAttribute('aria-valuetext', formatBytes(received) + ' terunduh' + (rate ? ' — ' + rate : ''));
       }
       if (el.downloadFill) el.downloadFill.style.width = '';
-      setText(el.downloadProgressText, formatBytes(received) + ' terunduh…');
+      setText(el.downloadProgressText, formatBytes(received) + ' terunduh…' + rateSuffix);
     }
     return percent;
   }
@@ -1549,6 +1833,7 @@
     var controller = typeof global.AbortController === 'function' ? new global.AbortController() : null;
     state.downloadController = controller;
     state.downloadBusy = true;
+    var startedAt = Date.now();
 
     var label = el.download ? el.download.querySelector('span') : null;
     var original = label ? label.textContent : '';
@@ -1557,7 +1842,7 @@
       el.download.setAttribute('aria-busy', 'true');
       el.download.title = 'Klik untuk membatalkan unduhan';
     }
-    showDownloadProgress(0, expected);
+    showDownloadProgress(0, expected, 0);
 
     try {
       var response = await fetch(url, {
@@ -1591,6 +1876,7 @@
         var received = 0;
         var lastPaintBytes = -1;
         var lastPaintAt = 0;
+        var speedWindow = [{ t: startedAt, bytes: 0 }];
         if (label) label.textContent = total > 0 ? 'Mengunduh… 0%' : 'Mengunduh…';
         while (true) {
           var step = await reader.read();
@@ -1607,14 +1893,19 @@
           var now = Date.now();
           if (lastPaintBytes < 0 || received === total ||
               received - lastPaintBytes >= 32768 || now - lastPaintAt >= 120) {
-            var percent = showDownloadProgress(received, total);
+            speedWindow.push({ t: now, bytes: received });
+            while (speedWindow.length > 2 && now - speedWindow[0].t > 2000) speedWindow.shift();
+            var windowStart = speedWindow[0];
+            var windowSeconds = (now - windowStart.t) / 1000;
+            var speed = windowSeconds > 0.15 ? (received - windowStart.bytes) / windowSeconds : 0;
+            var percent = showDownloadProgress(received, total, speed);
             if (label && total > 0) label.textContent = 'Mengunduh… ' + percent + '%';
             lastPaintBytes = received;
             lastPaintAt = now;
           }
         }
         if (token !== state.downloadToken) return;
-        showDownloadProgress(received, total || received);
+        showDownloadProgress(received, total || received, 0);
         blob = new Blob(chunks, {
           type: (response.headers && response.headers.get('content-type')) || 'video/mp4'
         });
@@ -1625,8 +1916,10 @@
 
       if (token !== state.downloadToken) return;
       if (!blob || !blob.size) throw new Error('File kosong.');
+      var elapsedTotal = (Date.now() - startedAt) / 1000;
+      var averageSpeed = elapsedTotal > 0 ? blob.size / elapsedTotal : 0;
       if (label) label.textContent = 'Menyimpan…';
-      showDownloadProgress(blob.size, blob.size || total);
+      showDownloadProgress(blob.size, blob.size || total, averageSpeed);
 
       var objectUrl = URL.createObjectURL(blob);
       var link = document.createElement('a');
@@ -1636,7 +1929,8 @@
       link.click();
       link.remove();
       setTimeout(function () { URL.revokeObjectURL(objectUrl); }, 30000);
-      setText(el.downloadProgressText, formatBytes(blob.size) + ' · selesai');
+      setText(el.downloadProgressText, formatBytes(blob.size) + ' · selesai' +
+        (averageSpeed ? ' · rata-rata ' + formatSpeed(averageSpeed) : ''));
       setStatus('Video berhasil diunduh.', 'success');
     } catch (err) {
       if (token !== state.downloadToken) return;
@@ -1671,6 +1965,7 @@
     renderStats(result && result.stats);
     setText(el.engagement, 'Interaksi: ' + formatPercent(result && result.engagementRate));
     renderMethod(result);
+    renderRecipe(result);
     renderDetails(result);
     setText(el.source, sourceNote(result && result.stream));
     renderDownload(result);
@@ -1768,6 +2063,7 @@
       stats: byId('ttStats'),
       engagement: byId('ttEngagement'),
       method: byId('ttMethod'),
+      recipe: byId('ttRecipe'),
       details: byId('ttDetails'),
       source: byId('ttSource'),
       downloadRow: byId('ttDownloadRow'),

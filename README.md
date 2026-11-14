@@ -44,15 +44,18 @@ hanya membaca metadata container; tidak ada file yang dikirim ke server.
 Checker tersedia langsung di halaman utama, di bagian
 [`#cek-tiktok`](https://korifcan.github.io/tiktok-hd/#cek-tiktok), setelah Studio.
 Tidak ada halaman terpisah. Setelah pengecekan berhasil, tombol **Download video**
-mengambil file dari CDN TikTok dan menampilkan progres unduhan berupa persentase
-serta jumlah byte. Alur upload prep tidak berubah.
+mengambil file dari CDN TikTok dan menampilkan progres unduhan berupa persentase,
+jumlah byte, serta kecepatan unduhan saat itu (rata-rata saat selesai). Alur
+upload prep tidak berubah.
 
 | Bagian | Isi |
 | --- | --- |
 | Statistik publik | Tayangan, suka, komentar, bagikan, disimpan, dan engagement rate (suka + komentar + bagikan + disimpan ÷ tayangan). |
 | Video | Penulis dan @username, judul, tanggal, wilayah, cover, dan tautan ke TikTok. |
 | Stream | Resolusi, FPS, durasi, codec, bit depth/chroma, HDR/DV, bitrate video dan audio, serta ukuran file. |
-| Metode cek | Berapa banyak file yang dibaca untuk metadata: file penuh, 2 MB pertama, atau 2 MB terakhir. |
+| Metode | Nilai metadata `artist` pada stream. Video hasil resep KoRifCan menampilkan `KoRifCan`; bila metadata hilang, `Tidak terdeteksi`. |
+| Resep | Nilai metadata `comment` pada stream: `Best Quality` atau `Best Quality For iPhone`. |
+| Cara cek | Berapa banyak file yang dibaca untuk metadata: file penuh, 2 MB pertama, atau 2 MB terakhir. |
 | Kualitas stream | Label HD/SD dan status watermark dari stream yang dipilih TikWM. |
 | Download | Tombol di kartu hasil yang mengambil file MP4 dari stream CDN yang sama, dengan progres unduhan. |
 
@@ -70,10 +73,17 @@ Urutan kerjanya:
    membatalkannya.
 
 Batas baca metadata sekitar 4 MB; video yang lebih besar dari itu tidak diunduh
-penuh saat pengecekan. Metode yang dipakai ditampilkan di kartu hasil (badge dan
-baris **Metode cek**), bersama kualitas stream yang dipilih. Metadata yang tampil
+penuh saat pengecekan. Kartu hasil menampilkan **Metode** (dari metadata `artist`),
+**Resep** (dari metadata `comment`), dan **Cara cek** (2 MB pertama, 2 MB terakhir,
+atau file penuh), bersama kualitas stream yang dipilih. Metadata yang tampil
 berasal dari stream yang diberikan TikWM, bukan dari file asli di perangkat
 pengunggah.
+
+TikTok sering menghapus metadata `artist`/`comment` saat memproses ulang video.
+Karena itu **Tidak terdeteksi** berarti metadata tidak ditemukan pada stream,
+bukan bukti bahwa video tidak pernah memakai resep KoRifCan. Untuk file KoRifCan
+lama yang `comment`-nya masih berisi `KoRifCan`, nama resep disimpulkan dari
+jumlah trek audio (2 trek → Best Quality, 3 trek → Best Quality For iPhone).
 
 ### Privasi
 
@@ -89,6 +99,8 @@ KoRifCan. Tidak ada file yang diunggah ke server KoRifCan.
 - Statistik bisa berasal dari cache TikTok/TikWM dan tidak selalu real-time.
 - Metadata mengikuti stream tertentu dari TikWM; stream lain dari video yang
   sama bisa berbeda.
+- TikTok dapat menghapus metadata `artist`/`comment` setelah upload, sehingga
+  deteksi resep bersifat best-effort dan bisa menampilkan `Tidak terdeteksi`.
 - Postingan foto atau slideshow tidak didukung.
 - Pengecekan maksimal membaca sekitar 4 MB; bila stream tidak bisa diprobe,
   statistik tetap ditampilkan tanpa detail metadata.
@@ -154,7 +166,8 @@ Contoh hasil pada sumber Dolby Vision Profile 8.1 + HDR10+:
 - 18 frame silent tail, 8 frame terakhir memakai entri `stsd` kedua.
 - Satu track audio HQ + satu track clone berbagi media data.
 - Movie timescale 1000, faststart, video edit list media time 0.
-- Metadata mdta: `artist`, `comment`, `copyright`, `te_is_reencode`, `encoder`.
+- Metadata mdta: `artist` = `KoRifCan`, `comment` = `Best Quality`, `copyright`,
+  `te_is_reencode`, `encoder`.
 - Atom iTunes: `©ART`, `©cmt`, `©nam`, `©wrt`, `©alb`, `©grp`, `cprt`, `©too`.
   Semua atom branding bernilai `KoRifCan`; `©too` tetap berisi encoder.
   Tidak ada branding ADJN.
@@ -166,7 +179,8 @@ Contoh hasil pada sumber Dolby Vision Profile 8.1 + HDR10+:
 - Audio HQ: AAC-LC 48 kHz stereo target 346 kbps, 19 frame tail.
 - Track HQ memiliki clone; total tiga track audio.
 - Movie timescale 384000; edit list kompatibilitas memakai media time 2112.
-- Metadata mdta dan atom iTunes yang sama.
+- Metadata mdta dan atom iTunes yang sama, dengan `comment` =
+  `Best Quality For iPhone`.
 
 `copyright` (mdta) berisi 32 karakter pertama SHA-256 file input sebagai
 sidik jari. Semua atom iTunes branding, termasuk `cprt`, berisi `KoRifCan`.
