@@ -1345,6 +1345,70 @@
     return 'Terjadi kesalahan saat memeriksa video. Coba lagi.';
   }
 
+  function looksLikeTikTokLink(value) {
+    return /tiktok\.com|tt\.site/i.test(String(value || ''));
+  }
+
+  function extractClipboardLink(text) {
+    var value = cleanText(text);
+    if (!value) return '';
+    var matches = value.match(/https?:\/\/[^\s<>"']+/gi);
+    if (!matches || !matches.length) return value;
+    var first = '';
+    for (var i = 0; i < matches.length; i++) {
+      var candidate = matches[i].replace(/[),.;!?]+$/, '');
+      if (!first) first = candidate;
+      if (looksLikeTikTokLink(candidate)) return candidate;
+    }
+    return first;
+  }
+
+  async function pasteFromClipboard() {
+    var clipboard = global.navigator && global.navigator.clipboard;
+    if (!clipboard || typeof clipboard.readText !== 'function') {
+      setStatus('Browser ini tidak mendukung tombol Tempel. Gunakan Ctrl+V atau tekan lama di kolom link.', 'warning');
+      if (el.url) el.url.focus();
+      return;
+    }
+
+    var text;
+    try {
+      text = await clipboard.readText();
+    } catch (err) {
+      setStatus('Akses clipboard ditolak. Tempel manual dengan Ctrl+V atau tekan lama di kolom link.', 'warning');
+      if (el.url) el.url.focus();
+      return;
+    }
+
+    var link = extractClipboardLink(text);
+    if (!link) {
+      setStatus('Clipboard kosong. Salin link video TikTok terlebih dahulu.', 'warning');
+      if (el.url) el.url.focus();
+      return;
+    }
+    if (el.url && el.url.disabled) {
+      setStatus('Kolom link sedang tidak bisa diubah. Tunggu pemeriksaan selesai.', 'warning');
+      return;
+    }
+
+    if (el.url) {
+      el.url.value = link;
+      try {
+        el.url.dispatchEvent(new Event('input', { bubbles: true }));
+      } catch (err) { /* ignore */ }
+      try {
+        el.url.focus();
+        el.url.setSelectionRange(link.length, link.length);
+      } catch (err) { /* ignore */ }
+    }
+
+    if (looksLikeTikTokLink(link)) {
+      setStatus('Link TikTok ditempel. Tekan Cek video untuk memeriksa.', 'success');
+    } else {
+      setStatus('Teks ditempel, tetapi tidak terlihat seperti link TikTok.', 'warning');
+    }
+  }
+
   function regionName(code) {
     var value = cleanText(code).toUpperCase();
     if (!value) return '';
@@ -2052,6 +2116,7 @@
     el = {
       form: byId('ttForm'),
       url: byId('ttUrl'),
+      paste: byId('ttPaste'),
       submit: byId('ttSubmit'),
       status: byId('ttStatus'),
       result: byId('ttResult'),
@@ -2097,6 +2162,11 @@
     el.form.addEventListener('submit', function (event) {
       handleSubmit(event);
     });
+    if (el.paste) {
+      el.paste.addEventListener('click', function () {
+        pasteFromClipboard();
+      });
+    }
     if (el.download) el.download.addEventListener('click', handleDownload);
 
     var checkTarget = byId('cek-tiktok');

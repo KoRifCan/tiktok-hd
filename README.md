@@ -57,7 +57,7 @@ upload prep tidak berubah.
 | Resep | Nilai metadata `comment` pada stream: `Best Quality` atau `Best Quality For iPhone`. |
 | Cara cek | Berapa banyak file yang dibaca untuk metadata: file penuh, 2 MB pertama, atau 2 MB terakhir. |
 | Kualitas stream | Label HD/SD dan status watermark dari stream yang dipilih TikWM. |
-| Download | Tombol di kartu hasil yang mengambil file MP4 dari stream CDN yang sama, dengan progres unduhan. |
+| Download | Tombol di kartu hasil yang mengambil file MP4 dari stream CDN yang sama, dengan progres unduhan. Tombol **Tempel** di kolom link membaca clipboard. |
 
 Urutan kerjanya:
 

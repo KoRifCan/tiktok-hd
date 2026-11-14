@@ -209,6 +209,58 @@
   box-shadow: 0 0 0 4px rgba(37, 244, 238, 0.11);
 }
 
+.tt-input-wrap {
+  position: relative;
+  min-width: 0;
+}
+
+.tt-input-wrap .tt-input {
+  padding-right: 102px;
+}
+
+.tt-paste {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 160ms ease, color 160ms ease, background 160ms ease;
+}
+
+.tt-paste:hover {
+  border-color: rgba(11, 143, 138, 0.35);
+  background: rgba(11, 143, 138, 0.05);
+  color: var(--text);
+}
+
+.tt-paste:active {
+  transform: translateY(1px);
+}
+
+.tt-paste:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.tt-paste .icon {
+  width: 15px;
+  height: 15px;
+}
+
 .tt-submit {
   width: 100%;
   min-height: 52px;
