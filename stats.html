@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Cek Statistik &amp; Metadata Video TikTok — KoRifCan</title>
+  <meta name="description" content="Cek statistik publik dan metadata stream video TikTok langsung di browser. Statistik dari TikWM, metadata dibaca lokal dari sebagian file video. Tanpa akun, tanpa upload file.">
+  <meta name="theme-color" content="#f7f4ee">
+  <meta property="og:title" content="Cek Statistik &amp; Metadata Video TikTok — KoRifCan">
+  <meta property="og:description" content="Statistik publik dan metadata stream video TikTok, langsung di browser. Statistik dari TikWM; metadata dibaca dari sebagian file video.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="KoRifCan">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="tiktok-stats.css">
+</head>
+<body>
+  <svg class="svg-sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="gradMark" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#25f4ee"></stop>
+        <stop offset=".52" stop-color="#8b7cff"></stop>
+        <stop offset="1" stop-color="#ff375f"></stop>
+      </linearGradient>
+    </defs>
+    <symbol id="icon-mark" viewBox="0 0 40 40">
+      <rect width="40" height="40" rx="12" fill="url(#gradMark)"></rect>
+      <path d="M13 11v18M13 20.2l10.6-8.7M13 20.2l10.6 8.7" fill="none" stroke="#08080c" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"></path>
+      <circle cx="28.4" cy="11.6" r="2.8" fill="#08080c"></circle>
+    </symbol>
+    <symbol id="icon-arrow" viewBox="0 0 24 24">
+      <path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+    </symbol>
+    <symbol id="icon-tiktok" viewBox="0 0 24 24">
+      <path d="M12.53.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07Z" fill="currentColor"></path>
+    </symbol>
+    <symbol id="icon-waves" viewBox="0 0 24 24">
+      <path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 10.5v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+    </symbol>
+    <symbol id="icon-lock" viewBox="0 0 24 24">
+      <rect x="5" y="10" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.7"></rect>
+      <path d="M8.5 10V7.5a3.5 3.5 0 1 1 7 0V10M12 14v2.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"></path>
+    </symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24">
+      <path d="m5 12.5 4.3 4.3L19 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+    </symbol>
+    <symbol id="icon-shield" viewBox="0 0 24 24">
+      <path d="M12 3l7 3v5.5c0 4.5-3 7.7-7 9.5-4-1.8-7-5-7-9.5V6l7-3Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path>
+      <path d="m9 12 2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+    </symbol>
+  </svg>
+
+  <div class="page-glow-layer" aria-hidden="true">
+    <div class="page-glow page-glow--one"></div>
+    <div class="page-glow page-glow--two"></div>
+  </div>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="KoRifCan, kembali ke beranda">
+        <span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#icon-mark"></use></svg></span>
+        <span class="brand-name">KoRifCan<span class="brand-dot">.</span></span>
+      </a>
+      <nav class="header-nav" aria-label="Navigasi utama">
+        <a href="index.html#cara-kerja">Cara kerja</a>
+        <a href="index.html#resep">Resep</a>
+        <a href="index.html#faq">FAQ</a>
+        <a class="stats-nav-current" href="stats.html" aria-current="page">Cek TikTok</a>
+      </nav>
+      <a class="header-cta" href="https://www.tiktok.com/@korifcan" target="_blank" rel="noopener noreferrer">
+        <span>@korifcan</span>
+        <svg class="icon" aria-hidden="true"><use href="#icon-arrow"></use></svg>
+      </a>
+    </div>
+  </header>
+
+  <main id="atas">
+    <section class="stats-hero">
+      <div class="container stats-hero-grid">
+        <div class="stats-hero-copy">
+          <div class="eyebrow"><span class="eyebrow-dot"></span> TikTok stats</div>
+          <h1 class="stats-title">Cek video <span class="text-grad">TikTok.</span></h1>
+          <p class="stats-lead">Statistik publik dan metadata stream, langsung di browser.</p>
+          <ul class="stats-facts" aria-label="Ringkasan pemeriksaan">
+            <li><svg class="icon" aria-hidden="true"><use href="#icon-waves"></use></svg> Statistik publik</li>
+            <li><svg class="icon" aria-hidden="true"><use href="#icon-shield"></use></svg> Tanpa akun</li>
+            <li><svg class="icon" aria-hidden="true"><use href="#icon-check"></use></svg> Metadata stream</li>
+          </ul>
+        </div>
+
+        <div class="stats-card">
+          <div class="stats-card-head">
+            <span class="stats-card-icon"><svg class="icon" aria-hidden="true"><use href="#icon-tiktok"></use></svg></span>
+            <div>
+              <h2 class="stats-card-title">Tempel link video</h2>
+              <p>Link publik dari tiktok.com, vt.tiktok.com, atau vm.tiktok.com.</p>
+            </div>
+          </div>
+
+          <form id="ttForm" class="tt-form" novalidate>
+            <label class="tt-label" for="ttUrl">Link video TikTok</label>
+            <div class="tt-input-row">
+              <input class="tt-input" id="ttUrl" name="url" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://www.tiktok.com/@..." aria-describedby="ttHint" required>
+              <button class="btn btn-primary tt-submit" id="ttSubmit" type="submit" aria-controls="ttResult">
+                <span>Cek video</span>
+                <svg class="icon" aria-hidden="true"><use href="#icon-arrow"></use></svg>
+              </button>
+            </div>
+            <p class="tt-hint" id="ttHint">Tempel link video publik. Statistik dari TikWM; metadata dibaca dari sebagian file video.</p>
+          </form>
+
+          <div class="tt-status" id="ttStatus" role="status" aria-live="polite" aria-atomic="true"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats-disclosure-section" aria-label="Catatan privasi dan data">
+      <div class="container">
+        <div class="stats-disclosure">
+          <span class="stats-disclosure-icon"><svg class="icon" aria-hidden="true"><use href="#icon-lock"></use></svg></span>
+          <div class="stats-disclosure-copy">
+            <strong>Privasi &amp; data</strong>
+            <p>Upload prep tetap 100% lokal. Pengecekan ini mengirim URL ke TikWM dan mengambil sebagian file dari CDN TikTok; tidak ada file yang diunggah ke server kami.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats-result-section" aria-label="Hasil pemeriksaan video">
+      <div class="container">
+        <div class="tt-result" id="ttResult" hidden>
+          <div class="tt-result-head">
+            <div class="eyebrow"><span class="eyebrow-dot"></span> Hasil pemeriksaan</div>
+          </div>
+          <div class="tt-result-grid">
+            <div class="tt-media">
+              <img id="ttCover" alt="" width="360" height="640" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+            </div>
+            <div class="tt-body">
+              <div class="tt-identity">
+                <p class="tt-author" id="ttAuthor"></p>
+                <h2 class="tt-title" id="ttTitle"></h2>
+                <p class="tt-meta" id="ttMeta"></p>
+                <a class="tt-link" id="ttLink" href="https://www.tiktok.com/" target="_blank" rel="noopener noreferrer">Buka di TikTok</a>
+              </div>
+              <div class="tt-stats" id="ttStats" aria-label="Statistik publik video"></div>
+              <p class="tt-engagement" id="ttEngagement"></p>
+              <dl class="tt-details" id="ttDetails" aria-label="Metadata stream video"></dl>
+              <p class="tt-source" id="ttSource"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section stats-how" id="cara-cek">
+      <div class="container">
+        <div class="section-head">
+          <div class="eyebrow"><span class="eyebrow-dot"></span> Cara cek</div>
+          <h2>Angka dari TikWM. Detail dari file.</h2>
+          <p>Hasil disimpan sementara di sesi tab ini, lalu dilupakan saat tab ditutup. Tidak ada database atau server KoRifCan.</p>
+        </div>
+        <div class="stats-steps">
+          <article class="stats-step">
+            <span class="stats-step-index">01</span>
+            <h3>Statistik publik</h3>
+            <p>Tayangan, suka, komentar, bagikan, dan simpan dibaca lewat TikWM, API pihak ketiga. Angkanya bisa berubah kapan saja.</p>
+          </article>
+          <article class="stats-step">
+            <span class="stats-step-index">02</span>
+            <h3>Metadata dari file</h3>
+            <p>Resolusi, FPS, codec, audio, dan HDR dibaca dari sebagian kecil file video — bukan dari tebakan atau label unggahan.</p>
+          </article>
+          <article class="stats-step">
+            <span class="stats-step-index">03</span>
+            <h3>File tidak diunggah</h3>
+            <p>URL dikirim ke TikWM. File video diambil langsung dari CDN TikTok untuk dibaca di browser, tidak pernah melewati server KoRifCan.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="closing">
+      <div class="container closing-inner">
+        <div>
+          <div class="eyebrow"><span class="eyebrow-dot"></span> Siap upload?</div>
+          <h2>Sudah cek. Sekarang siapkan.</h2>
+          <p>Upload prep tetap diproses di browser-mu, tanpa unggahan ke server.</p>
+        </div>
+        <a class="btn btn-primary" href="index.html#studio">
+          <span>Buka studio</span>
+          <svg class="icon" aria-hidden="true"><use href="#icon-arrow"></use></svg>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="index.html" aria-label="KoRifCan">
+          <span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#icon-mark"></use></svg></span>
+          <span class="brand-name">KoRifCan<span class="brand-dot">.</span></span>
+        </a>
+        <p>Cek statistik dan metadata video TikTok. Upload prep tetap diproses di perangkatmu.</p>
+      </div>
+      <div class="footer-links">
+        <a href="index.html#cara-kerja">Cara kerja</a>
+        <a href="index.html#resep">Resep</a>
+        <a href="index.html#studio">Studio</a>
+        <a href="index.html#faq">FAQ</a>
+        <a href="stats.html" aria-current="page">Cek TikTok</a>
+        <a href="https://www.tiktok.com/@korifcan" target="_blank" rel="noopener noreferrer">TikTok @korifcan</a>
+      </div>
+      <div class="footer-note">
+        <span class="footer-pill"><svg class="icon" aria-hidden="true"><use href="#icon-waves"></use></svg> Data dari TikWM</span>
+        <p>Bukan layanan resmi TikTok. TikTok adalah merek dagang TikTok Pte. Ltd. Statistik pihak ketiga dapat berubah atau tidak tersedia.</p>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <span>© <span id="year">2026</span> KoRifCan</span>
+      <span>Dibuat untuk kreator yang peduli detail.</span>
+    </div>
+  </footer>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+  <script src="mp4-patcher.js?v=20261114a"></script>
+  <script src="tiktok-stats.js?v=20261114a"></script>
+</body>
+</html>

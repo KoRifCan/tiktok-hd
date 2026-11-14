@@ -7,6 +7,8 @@ Situs statis untuk menyiapkan video sebelum diunggah ke TikTok, dengan dua resep
 
 Video **tidak pernah di-encode ulang**. Patcher hanya membangun ulang container MP4 di sekitar sampel video yang sudah ada. Semua proses berjalan di browser menggunakan ffmpeg.wasm dan WebAssembly; tidak ada file yang diunggah ke server.
 
+Ada juga halaman **Cek TikTok** (`stats.html`) untuk melihat statistik publik dan metadata stream video TikTok. Halaman itu terpisah dari alur upload prep dan punya pengungkapan privasi sendiri.
+
 ## Cara kerja
 
 1. Video dibaca ke memori browser.
@@ -36,6 +38,48 @@ menampilkan:
 
 Perkiraan kualitas adalah heuristik, bukan pengukuran kualitas visual. Panel ini
 hanya membaca metadata container; tidak ada file yang dikirim ke server.
+
+## Cek statistik & metadata TikTok
+
+Halaman `stats.html` ([live](https://korifcan.github.io/tiktok-hd/stats.html))
+menampilkan statistik publik dan metadata stream sebuah video TikTok. Halaman
+ini hanya membaca; tidak ada tombol unduh dan alur upload prep tidak berubah.
+
+| Bagian | Isi |
+| --- | --- |
+| Statistik publik | Tayangan, suka, komentar, bagikan, disimpan, dan engagement rate (suka + komentar + bagikan + disimpan ÷ tayangan). |
+| Video | Penulis dan @username, judul, tanggal, wilayah, cover, dan tautan ke TikTok. |
+| Stream | Resolusi, FPS, durasi, codec, bit depth/chroma, HDR/DV, bitrate video dan audio, serta ukuran file. |
+
+Urutan kerjanya:
+
+1. URL TikTok dikirim ke [TikWM](https://tikwm.com) untuk mengambil statistik
+   dan URL stream bertanda tangan.
+2. Browser mengirim `Range` request ke CDN TikTok: 2 MB pertama; bila `moov`
+   tidak ditemukan, 2 MB terakhir.
+3. `mp4-patcher.js` membaca `moov` lewat `inspectVideo`/`inspectHdr`. Tidak ada
+   ffprobe, tidak ada re-encode, dan tidak ada backend.
+
+Batas baca sekitar 4 MB; video yang lebih besar dari itu tidak diunduh penuh.
+Metadata yang tampil berasal dari stream yang diberikan TikWM, bukan dari file
+asli di perangkat pengunggah.
+
+### Privasi
+
+Upload prep tetap **100% lokal** — file yang dipilih tidak dikirim ke mana pun.
+Di halaman statistik, URL video dikirim ke TikWM dan sebagian file diambil dari
+CDN TikTok. Tidak ada file yang diunggah ke server KoRifCan.
+
+### Batasan
+
+- TikWM adalah API pihak ketiga tidak resmi dan bukan layanan resmi TikTok;
+  CORS, rate limit, dan ketersediaan bisa berubah sewaktu-waktu.
+- Statistik bisa berasal dari cache TikTok/TikWM dan tidak selalu real-time.
+- Metadata mengikuti stream tertentu dari TikWM; stream lain dari video yang
+  sama bisa berbeda.
+- Postingan foto atau slideshow tidak didukung.
+- Pengecekan maksimal membaca sekitar 4 MB; bila stream tidak bisa diprobe,
+  statistik tetap ditampilkan tanpa detail metadata.
 
 ## Upload ke TikTok Studio
 
@@ -118,9 +162,12 @@ sidik jari. Semua atom iTunes branding, termasuk `cprt`, berisi `KoRifCan`.
 ## Struktur
 
 ```
-index.html          Halaman utama
+index.html          Halaman utama (upload prep)
+stats.html          Halaman cek statistik & metadata
 style.css           Desain dan layout
+tiktok-stats.css    Gaya halaman statistik
 app.js              UI, alur proses, ffmpeg.wasm
+tiktok-stats.js     Alur cek statistik & probe stream
 patch-worker.js     Worker untuk container patcher
 mp4-patcher.js      Implementasi patcher MP4
 sw.js               Cache runtime untuk aset ffmpeg
@@ -146,7 +193,7 @@ Karena memakai WebAssembly dan WebCrypto, jalankan lewat HTTP lokal (bukan `file
 
 ```bash
 python3 -m http.server 8080
-# buka http://localhost:8080
+# buka http://localhost:8080 atau http://localhost:8080/stats.html
 ```
 
 Tidak ada build step dan tidak ada dependensi npm.
