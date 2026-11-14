@@ -12,7 +12,7 @@
   <meta property="og:site_name" content="KoRifCan">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css?v=20261113a">
-  <link rel="stylesheet" href="tiktok-stats.css?v=20261114b">
+  <link rel="stylesheet" href="tiktok-stats.css?v=20261114c">
 </head>
 <body>
   <svg class="svg-sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
@@ -124,28 +124,14 @@
           <div class="eyebrow"><span class="eyebrow-dot"></span> TikTok upload prep</div>
           <h1>Kualitas asli video,<br><span class="text-grad">siap untuk TikTok.</span></h1>
           <p class="hero-lead">KoRifCan menyiapkan file MP4 dengan resep <strong>Best Quality</strong> atau <strong>Best Quality For iPhone</strong>. Stream video tidak di-encode ulang — semuanya berjalan di browser-mu.</p>
-          <div class="hero-check" id="cek-tiktok">
-            <form id="ttForm" class="tt-form" novalidate>
-              <label class="tt-label" for="ttUrl">Tempel link video TikTok</label>
-              <div class="tt-input-row">
-                <input class="tt-input" id="ttUrl" name="url" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://www.tiktok.com/@..." aria-describedby="ttHint" required>
-                <button class="btn btn-primary tt-submit" id="ttSubmit" type="submit" aria-controls="ttResult">
-                  <span>Cek video</span>
-                  <svg class="icon" aria-hidden="true"><use href="#icon-arrow"></use></svg>
-                </button>
-              </div>
-              <p class="tt-hint" id="ttHint">Link publik dari tiktok.com, vt.tiktok.com, atau vm.tiktok.com. Statistik dari TikWM; metadata dibaca dari sebagian file video.</p>
-            </form>
-            <div class="tt-status" id="ttStatus" role="status" aria-live="polite" aria-atomic="true"></div>
-            <p class="hero-check-note">
-              <svg class="icon" aria-hidden="true"><use href="#icon-lock"></use></svg>
-              <span>Upload prep tetap 100% lokal. Pengecekan mengirim URL ke TikWM dan mengambil sebagian file dari CDN TikTok. <a href="stats.html">Halaman khusus</a></span>
-            </p>
-          </div>
           <div class="hero-actions">
             <a class="btn btn-primary" href="#studio">
               <span>Siapkan video</span>
               <svg class="icon" aria-hidden="true"><use href="#icon-arrow"></use></svg>
+            </a>
+            <a class="btn btn-ghost" href="#cek-tiktok">
+              <svg class="icon" aria-hidden="true"><use href="#icon-waves"></use></svg>
+              <span>Cek video</span>
             </a>
             <a class="btn btn-ghost" href="#cara-kerja">Lihat cara kerja</a>
           </div>
@@ -192,33 +178,6 @@
           <div class="float-card float-card--meta">
             <span class="float-icon float-icon--pink"><svg class="icon"><use href="#icon-tag"></use></svg></span>
             <span><strong>Metadata</strong><small>KoRifCan</small></span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="stats-embed-result-section" aria-label="Hasil pemeriksaan video">
-      <div class="container">
-        <div class="tt-result" id="ttResult" data-autoscroll="true" hidden>
-          <div class="tt-result-head">
-            <div class="eyebrow"><span class="eyebrow-dot"></span> Hasil pemeriksaan</div>
-          </div>
-          <div class="tt-result-grid">
-            <div class="tt-media">
-              <img id="ttCover" alt="" width="360" height="640" loading="lazy" decoding="async" referrerpolicy="no-referrer">
-            </div>
-            <div class="tt-body">
-              <div class="tt-identity">
-                <p class="tt-author" id="ttAuthor"></p>
-                <h3 class="tt-title" id="ttTitle"></h3>
-                <p class="tt-meta" id="ttMeta"></p>
-                <a class="tt-link" id="ttLink" href="https://www.tiktok.com/" target="_blank" rel="noopener noreferrer">Buka di TikTok</a>
-              </div>
-              <div class="tt-stats" id="ttStats" aria-label="Statistik publik video"></div>
-              <p class="tt-engagement" id="ttEngagement"></p>
-              <dl class="tt-details" id="ttDetails" aria-label="Metadata stream video"></dl>
-              <p class="tt-source" id="ttSource"></p>
-            </div>
           </div>
         </div>
       </div>
@@ -471,6 +430,89 @@
               </div>
             </div>
             <p class="result-footnote">TikTok tetap memproses ulang video saat upload. Upload lewat TikTok Studio di browser, bukan aplikasi, untuk mengurangi kompresi tambahan. Resep ini membantu mempertahankan kualitas, bukan menjamin hasil yang identik.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section stats-check-section" id="cek-tiktok" aria-labelledby="cek-tiktok-title">
+      <div class="container">
+        <div class="stats-check-grid">
+          <div class="stats-check-copy">
+            <div class="section-head">
+              <div class="eyebrow"><span class="eyebrow-dot"></span> Cek TikTok</div>
+              <h2 id="cek-tiktok-title">Cek videomu atau download video.</h2>
+              <p>Lihat statistik publik dan metadata stream, lalu unduh videonya. Upload prep tetap 100% lokal.</p>
+            </div>
+            <div class="stats-disclosure">
+              <span class="stats-disclosure-icon"><svg class="icon" aria-hidden="true"><use href="#icon-lock"></use></svg></span>
+              <div class="stats-disclosure-copy">
+                <strong>Privasi &amp; data</strong>
+                <p>Pengecekan mengirim URL ke TikWM dan mengambil sebagian file dari CDN TikTok. Upload prep tetap 100% lokal; tidak ada file yang diunggah ke server.</p>
+              </div>
+            </div>
+            <p class="stats-check-more"><a href="stats.html">Buka halaman khusus Cek TikTok</a></p>
+          </div>
+
+          <div class="stats-check-panel">
+            <div class="stats-card">
+              <div class="stats-card-head">
+                <span class="stats-card-icon"><svg class="icon" aria-hidden="true"><use href="#icon-tiktok"></use></svg></span>
+                <div>
+                  <h3 class="stats-card-title">Tempel link video</h3>
+                  <p>Link publik dari tiktok.com, vt.tiktok.com, atau vm.tiktok.com.</p>
+                </div>
+              </div>
+
+              <form id="ttForm" class="tt-form" novalidate>
+                <label class="tt-label" for="ttUrl">Link video TikTok</label>
+                <div class="tt-input-row">
+                  <input class="tt-input" id="ttUrl" name="url" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://www.tiktok.com/@..." aria-describedby="ttHint" required>
+                  <button class="btn btn-primary tt-submit" id="ttSubmit" type="submit" aria-controls="ttResult">
+                    <span>Cek video</span>
+                    <svg class="icon" aria-hidden="true"><use href="#icon-arrow"></use></svg>
+                  </button>
+                </div>
+                <p class="tt-hint" id="ttHint">Tempel link video publik. Statistik dari TikWM; metadata dibaca dari sebagian file video.</p>
+              </form>
+
+              <div class="tt-status" id="ttStatus" role="status" aria-live="polite" aria-atomic="true"></div>
+            </div>
+
+            <p class="stats-check-note">
+              <svg class="icon" aria-hidden="true"><use href="#icon-download"></use></svg>
+              <span>Tombol <strong>Download video</strong> muncul di kartu hasil setelah video berhasil dicek.</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="tt-result stats-check-result" id="ttResult" data-autoscroll="true" hidden>
+          <div class="tt-result-head">
+            <div class="eyebrow"><span class="eyebrow-dot"></span> Hasil pemeriksaan</div>
+          </div>
+          <div class="tt-result-grid">
+            <div class="tt-media">
+              <img id="ttCover" alt="" width="360" height="640" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+            </div>
+            <div class="tt-body">
+              <div class="tt-identity">
+                <p class="tt-author" id="ttAuthor"></p>
+                <h3 class="tt-title" id="ttTitle"></h3>
+                <p class="tt-meta" id="ttMeta"></p>
+                <a class="tt-link" id="ttLink" href="https://www.tiktok.com/" target="_blank" rel="noopener noreferrer">Buka di TikTok</a>
+              </div>
+              <div class="tt-download-row" id="ttDownloadRow" hidden>
+                <a class="btn btn-primary tt-download" id="ttDownload" href="#" download target="_blank" rel="noopener noreferrer">
+                  <svg class="icon" aria-hidden="true"><use href="#icon-download"></use></svg>
+                  <span>Download video</span>
+                </a>
+                <p class="tt-download-note">File diambil dari CDN TikTok. Unduh hanya video yang kamu berhak gunakan.</p>
+              </div>
+              <div class="tt-stats" id="ttStats" aria-label="Statistik publik video"></div>
+              <p class="tt-engagement" id="ttEngagement"></p>
+              <dl class="tt-details" id="ttDetails" aria-label="Metadata stream video"></dl>
+              <p class="tt-source" id="ttSource"></p>
+            </div>
           </div>
         </div>
       </div>
@@ -729,6 +771,6 @@
   <script src="mp4-patcher.js?v=20261113d"></script>
   <script src="ffmpeg/ffmpeg.js"></script>
   <script src="app.js?v=20261113d"></script>
-  <script src="tiktok-stats.js?v=20261114b"></script>
+  <script src="tiktok-stats.js?v=20261114c"></script>
 </body>
 </html>

@@ -39,20 +39,22 @@ menampilkan:
 Perkiraan kualitas adalah heuristik, bukan pengukuran kualitas visual. Panel ini
 hanya membaca metadata container; tidak ada file yang dikirim ke server.
 
-## Cek statistik & metadata TikTok
+## Cek statistik, metadata & download TikTok
 
 Halaman `stats.html` ([live](https://korifcan.github.io/tiktok-hd/stats.html))
 menampilkan statistik publik dan metadata stream sebuah video TikTok. Form yang
 sama juga tersedia langsung di halaman utama
 ([`index.html#cek-tiktok`](https://korifcan.github.io/tiktok-hd/#cek-tiktok)).
-Halaman ini hanya membaca; tidak ada tombol unduh dan alur upload prep tidak
-berubah.
+Di halaman utama, setelah pengecekan berhasil, tombol **Download video**
+mengambil file dari CDN TikTok. Halaman `stats.html` tetap hanya membaca.
+Alur upload prep tidak berubah.
 
 | Bagian | Isi |
 | --- | --- |
 | Statistik publik | Tayangan, suka, komentar, bagikan, disimpan, dan engagement rate (suka + komentar + bagikan + disimpan ÷ tayangan). |
 | Video | Penulis dan @username, judul, tanggal, wilayah, cover, dan tautan ke TikTok. |
 | Stream | Resolusi, FPS, durasi, codec, bit depth/chroma, HDR/DV, bitrate video dan audio, serta ukuran file. |
+| Download | Tombol di halaman utama yang mengambil file MP4 dari stream CDN yang sama. |
 
 Urutan kerjanya:
 
@@ -62,16 +64,19 @@ Urutan kerjanya:
    tidak ditemukan, 2 MB terakhir.
 3. `mp4-patcher.js` membaca `moov` lewat `inspectVideo`/`inspectHdr`. Tidak ada
    ffprobe, tidak ada re-encode, dan tidak ada backend.
+4. Bila tombol **Download video** ditekan, browser mengambil file penuh dari
+   URL stream yang sudah ditemukan, lalu menyimpannya sebagai MP4.
 
-Batas baca sekitar 4 MB; video yang lebih besar dari itu tidak diunduh penuh.
-Metadata yang tampil berasal dari stream yang diberikan TikWM, bukan dari file
-asli di perangkat pengunggah.
+Batas baca metadata sekitar 4 MB; video yang lebih besar dari itu tidak diunduh
+penuh saat pengecekan. Metadata yang tampil berasal dari stream yang diberikan
+TikWM, bukan dari file asli di perangkat pengunggah.
 
 ### Privasi
 
 Upload prep tetap **100% lokal** — file yang dipilih tidak dikirim ke mana pun.
 Di halaman statistik, URL video dikirim ke TikWM dan sebagian file diambil dari
-CDN TikTok. Tidak ada file yang diunggah ke server KoRifCan.
+CDN TikTok. Tombol download mengambil file dari CDN TikTok, bukan dari server
+KoRifCan. Tidak ada file yang diunggah ke server KoRifCan.
 
 ### Batasan
 
@@ -165,12 +170,12 @@ sidik jari. Semua atom iTunes branding, termasuk `cprt`, berisi `KoRifCan`.
 ## Struktur
 
 ```
-index.html          Halaman utama (upload prep + form cek TikTok)
+index.html          Halaman utama (upload prep + cek/download TikTok)
 stats.html          Halaman khusus cek statistik & metadata
 style.css           Desain dan layout
 tiktok-stats.css    Gaya cek statistik (halaman utama & stats.html)
 app.js              UI, alur proses, ffmpeg.wasm
-tiktok-stats.js     Alur cek statistik & probe stream
+tiktok-stats.js     Alur cek statistik, probe stream, dan download
 patch-worker.js     Worker untuk container patcher
 mp4-patcher.js      Implementasi patcher MP4
 sw.js               Cache runtime untuk aset ffmpeg

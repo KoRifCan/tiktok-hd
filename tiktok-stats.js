@@ -20,6 +20,7 @@
   var CACHE_VERSION = 1;
   var RESOLVE_TIMEOUT = 15000;
   var PROBE_TIMEOUT = 25000;
+  var MAX_BLOB_DOWNLOAD = 200 * 1024 * 1024;
 
   var state = {
     controller: null,
@@ -29,7 +30,11 @@
     submitLabel: null,
     submitLabelText: '',
     regionNames: null,
-    dateFormatter: null
+    dateFormatter: null,
+    downloadUrl: '',
+    downloadName: '',
+    downloadSize: 0,
+    downloadBusy: false
   };
 
   var el = {};
@@ -1384,6 +1389,86 @@
     return 'Sumber: TikWM · statistik saja';
   }
 
+  function downloadFileName(result) {
+    var author = cleanText(result && result.author && result.author.uniqueId).replace(/^@+/, '');
+    var id = cleanText(result && result.id);
+    var base = 'tiktok';
+    if (author) base += '-' + author;
+    if (id) base += '-' + id;
+    return base.replace(/[^a-z0-9._-]+/gi, '-').replace(/-+/g, '-') + '.mp4';
+  }
+
+  function renderDownload(result) {
+    if (!el.downloadRow || !el.download) return;
+    var stream = result && result.stream;
+    var url = stream && stream.url;
+    if (!url) {
+      state.downloadUrl = '';
+      state.downloadName = '';
+      state.downloadSize = 0;
+      el.downloadRow.hidden = true;
+      el.download.removeAttribute('href');
+      el.download.removeAttribute('download');
+      return;
+    }
+    state.downloadUrl = url;
+    state.downloadName = downloadFileName(result);
+    state.downloadSize = toNumber(stream && stream.totalSize);
+    el.download.href = url;
+    el.download.setAttribute('download', state.downloadName);
+    el.downloadRow.hidden = false;
+  }
+
+  async function handleDownload(event) {
+    if (!state.downloadUrl) return;
+    if (event) event.preventDefault();
+    if (state.downloadBusy) return;
+
+    if (state.downloadSize > MAX_BLOB_DOWNLOAD) {
+      try {
+        global.open(state.downloadUrl, '_blank', 'noopener');
+        setStatus('File besar; video dibuka di tab baru.', 'warning');
+      } catch (err) {
+        setStatus('Tidak bisa membuka video. Coba lagi.', 'error');
+      }
+      return;
+    }
+
+    state.downloadBusy = true;
+    var label = el.download ? el.download.querySelector('span') : null;
+    var original = label ? label.textContent : '';
+    if (label) label.textContent = 'Menyiapkan…';
+    if (el.download) el.download.setAttribute('aria-busy', 'true');
+
+    try {
+      var response = await fetch(state.downloadUrl, { credentials: 'omit', mode: 'cors' });
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      var blob = await response.blob();
+      if (!blob || !blob.size) throw new Error('File kosong.');
+
+      var objectUrl = URL.createObjectURL(blob);
+      var link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = state.downloadName || 'tiktok-video.mp4';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(function () { URL.revokeObjectURL(objectUrl); }, 30000);
+      setStatus('Video berhasil diunduh.', 'success');
+    } catch (err) {
+      try {
+        global.open(state.downloadUrl, '_blank', 'noopener');
+        setStatus('Browser tidak bisa mengunduh langsung; video dibuka di tab baru.', 'warning');
+      } catch (openErr) {
+        setStatus('Tidak bisa mengunduh video. Coba lagi.', 'error');
+      }
+    } finally {
+      state.downloadBusy = false;
+      if (el.download) el.download.removeAttribute('aria-busy');
+      if (label) label.textContent = original;
+    }
+  }
+
   function renderResult(result) {
     if (!el.result) return;
     renderCover(result);
@@ -1395,6 +1480,7 @@
     setText(el.engagement, 'Interaksi: ' + formatPercent(result && result.engagementRate));
     renderDetails(result);
     setText(el.source, sourceNote(result && result.stream));
+    renderDownload(result);
     el.result.hidden = false;
     if (el.result.hasAttribute('data-autoscroll')) {
       try {
@@ -1422,6 +1508,7 @@
       setBusy(false);
       setStatus(friendlyError(err), 'error');
       if (el.result) el.result.hidden = true;
+      renderDownload(null);
       if (el.url) el.url.focus();
       return;
     }
@@ -1430,6 +1517,7 @@
     state.controller = controller;
     state.lastUrl = normalized;
     if (el.result) el.result.hidden = true;
+    renderDownload(null);
     setBusy(true);
     setStatus('Mengambil statistik dari TikWM…', 'loading');
 
@@ -1455,6 +1543,7 @@
       if (token !== state.token) return;
       if (err && err.code === 'ABORTED') return;
       if (el.result) el.result.hidden = true;
+      renderDownload(null);
       setStatus(friendlyError(err), 'error');
       if (err && err.code === 'INVALID_URL' && el.url) el.url.focus();
     } finally {
@@ -1486,7 +1575,9 @@
       stats: byId('ttStats'),
       engagement: byId('ttEngagement'),
       details: byId('ttDetails'),
-      source: byId('ttSource')
+      source: byId('ttSource'),
+      downloadRow: byId('ttDownloadRow'),
+      download: byId('ttDownload')
     };
 
     if (!el.form) return;
@@ -1512,6 +1603,24 @@
     el.form.addEventListener('submit', function (event) {
       handleSubmit(event);
     });
+    if (el.download) el.download.addEventListener('click', handleDownload);
+
+    var checkTarget = byId('cek-tiktok');
+    if (checkTarget && document.querySelectorAll) {
+      var checkLinks = document.querySelectorAll('a[href="#cek-tiktok"]');
+      for (var i = 0; i < checkLinks.length; i++) {
+        checkLinks[i].addEventListener('click', function (event) {
+          if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+          event.preventDefault();
+          try { history.replaceState(null, '', '#cek-tiktok'); } catch (err) { /* ignore */ }
+          try {
+            checkTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } catch (err) {
+            try { checkTarget.scrollIntoView(); } catch (fallbackErr) { /* ignore */ }
+          }
+        });
+      }
+    }
 
     var year = byId('year');
     if (year) year.textContent = String(new Date().getFullYear());
