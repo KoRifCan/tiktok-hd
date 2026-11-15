@@ -199,6 +199,13 @@ sw.js               Cache runtime untuk aset ffmpeg
 ffmpeg/             ffmpeg.wasm 5.1.4 (core + loader)
 fonts/              Font self-hosted + lisensi OFL
 favicon.svg         Ikon situs
+og-image.png        Kartu preview 1200×630 untuk media sosial
+apple-touch-icon.png  Ikon home screen iOS
+icon-192.png        Ikon manifest Android
+icon-512.png        Ikon manifest Android
+manifest.webmanifest  Metadata PWA ringan
+robots.txt          Aturan crawler + lokasi sitemap
+sitemap.xml         Sitemap halaman utama
 ```
 
 ## Tipografi
@@ -211,6 +218,20 @@ Situs memakai dua font variabel self-hosted, tanpa dependensi Google Fonts saat 
 Keduanya berlisensi SIL Open Font License 1.1. Berkas lisensi ada di
 `fonts/OFL-BricolageGrotesque.txt` dan `fonts/OFL-PlusJakartaSans.txt`.
 Metadata teknis (nama file, codec, bitrate) tetap memakai font monospace sistem.
+
+## SEO & berbagi
+
+Halaman utama memakai URL absolut `https://korifcan.github.io/tiktok-hd/` untuk
+canonical, `og:url`, `og:image`, dan sitemap. Metadata yang tersedia:
+
+- Open Graph lengkap dengan kartu `og-image.png` 1200×630 untuk preview WhatsApp,
+  Facebook, LinkedIn, dan Discord.
+- Twitter Card `summary_large_image`.
+- JSON-LD `WebSite`, `Person`, `SoftwareApplication`, dan `FAQPage`.
+- `robots.txt`, `sitemap.xml`, `apple-touch-icon.png`, dan manifest ikon Android.
+
+Jika situs pindah domain, ganti URL absolut di `index.html`, `robots.txt`, dan
+`sitemap.xml`, lalu buat ulang `og-image.png` karena footer kartu memuat URL situs.
 
 ## Menjalankan lokal
 
