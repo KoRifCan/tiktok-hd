@@ -1,0 +1,981 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>404 — Halaman tidak ditemukan · KoRifCan</title>
+  <meta name="description" content="Halaman yang kamu cari tidak ada di timeline KoRifCan. Kembali ke Studio untuk menyiapkan video TikTok atau cek video lewat checker.">
+  <meta name="robots" content="noindex,follow">
+  <meta name="theme-color" content="#f7f4ee">
+  <link rel="icon" href="/tiktok-hd/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" sizes="180x180" href="/tiktok-hd/apple-touch-icon.png">
+  <link rel="stylesheet" href="/tiktok-hd/style.css?v=20261113a">
+  <style>
+    /* ------------------------------------------------------------------
+       404 page
+       ------------------------------------------------------------------ */
+    .error-page {
+      min-height: 100vh;
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      isolation: isolate;
+    }
+
+    .error-skip {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 100;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: var(--text);
+      color: #fff;
+      font-size: 0.82rem;
+      font-weight: 700;
+      transform: translateY(-160%);
+      transition: transform 180ms ease;
+    }
+
+    .error-skip:focus {
+      transform: translateY(0);
+    }
+
+    .error-bg {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .error-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(110px);
+      opacity: 0.48;
+      will-change: transform;
+    }
+
+    .error-orb--cyan {
+      width: 520px;
+      height: 520px;
+      top: -220px;
+      right: -110px;
+      background: #a9fff7;
+      animation: error-orb-drift 18s ease-in-out infinite alternate;
+    }
+
+    .error-orb--pink {
+      width: 480px;
+      height: 480px;
+      bottom: -240px;
+      left: -160px;
+      background: #ffd1da;
+      opacity: 0.4;
+      animation: error-orb-drift 21s -7s ease-in-out infinite alternate-reverse;
+    }
+
+    .error-orb--violet {
+      width: 380px;
+      height: 380px;
+      top: 38%;
+      left: 46%;
+      background: #dcd7ff;
+      opacity: 0.34;
+      animation: error-orb-drift 24s -11s ease-in-out infinite alternate;
+    }
+
+    .error-header {
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 26px clamp(18px, 4vw, 40px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      position: relative;
+      z-index: 2;
+      animation: error-rise 650ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    .error-header-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.68);
+      color: var(--text-soft);
+      font-size: 0.82rem;
+      font-weight: 650;
+      transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+    }
+
+    .error-header-home .icon {
+      width: 15px;
+      height: 15px;
+      color: var(--violet);
+    }
+
+    .error-header-home:hover {
+      border-color: var(--line-strong);
+      background: #fff;
+      transform: translateY(-1px);
+    }
+
+    .error-main {
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 28px clamp(18px, 4vw, 40px) 56px;
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr);
+      align-items: center;
+      gap: clamp(36px, 6vw, 80px);
+    }
+
+    .error-copy {
+      max-width: 700px;
+      animation: error-rise 720ms 80ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    .error-copy .eyebrow {
+      margin-bottom: 20px;
+    }
+
+    .error-copy h1 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: clamp(3.1rem, 6.2vw, 5.45rem);
+      line-height: 0.99;
+      font-weight: 760;
+      letter-spacing: -0.06em;
+    }
+
+    .error-lead {
+      max-width: 570px;
+      margin: 25px 0 0;
+      font-size: clamp(1rem, 1.35vw, 1.14rem);
+      line-height: 1.65;
+      color: var(--muted);
+    }
+
+    .error-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-top: 31px;
+    }
+
+    .error-route {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      max-width: 100%;
+      margin-top: 27px;
+      padding: 9px 13px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.58);
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 0.69rem;
+      line-height: 1.3;
+    }
+
+    .error-route-dot {
+      width: 6px;
+      height: 6px;
+      flex: none;
+      border-radius: 50%;
+      background: var(--pink);
+      box-shadow: 0 0 0 4px rgba(217, 45, 78, 0.1);
+    }
+
+    .error-route code {
+      display: block;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .error-links {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 16px;
+      margin-top: 27px;
+      font-size: 0.8rem;
+      color: var(--muted-2);
+    }
+
+    .error-links > span {
+      margin-right: 2px;
+      font-weight: 600;
+    }
+
+    .error-links a {
+      color: var(--text-soft);
+      font-weight: 650;
+      text-decoration: underline;
+      text-decoration-color: rgba(23, 20, 29, 0.18);
+      text-underline-offset: 3px;
+      transition: color 160ms ease, text-decoration-color 160ms ease;
+    }
+
+    .error-links a:hover {
+      color: var(--violet);
+      text-decoration-color: currentColor;
+    }
+
+    /* Visual ------------------------------------------------------------ */
+
+    .error-visual {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 500px;
+      padding: 18px 10px;
+      animation: error-rise 820ms 160ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    .error-watermark {
+      position: absolute;
+      top: -62px;
+      right: -22px;
+      z-index: -1;
+      font-family: var(--font-display);
+      font-size: clamp(10rem, 19vw, 17rem);
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: -0.09em;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(23, 20, 29, 0.07);
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .error-glow {
+      position: absolute;
+      inset: -12% -8%;
+      z-index: -1;
+      background:
+        radial-gradient(circle at 54% 38%, rgba(37, 244, 238, 0.24), transparent 48%),
+        radial-gradient(circle at 68% 74%, rgba(255, 55, 95, 0.2), transparent 48%),
+        radial-gradient(circle at 32% 62%, rgba(139, 124, 255, 0.22), transparent 52%);
+      filter: blur(16px);
+      pointer-events: none;
+    }
+
+    .error-player-wrap {
+      position: relative;
+      z-index: 1;
+      width: min(100%, 420px);
+    }
+
+    .error-player {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 27px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 40px 90px -46px rgba(47, 35, 80, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      transform: rotate(2deg);
+      animation: error-player-float 7s -1.5s ease-in-out infinite;
+    }
+
+    .player-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 3px 4px 13px;
+      color: var(--muted-2);
+      font-size: 0.61rem;
+      font-weight: 700;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .player-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .player-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--pink);
+      box-shadow: 0 0 0 4px rgba(217, 45, 78, 0.12);
+      animation: player-pulse 1.8s ease-in-out infinite;
+    }
+
+    .player-file {
+      font-family: var(--mono);
+      font-size: 0.61rem;
+      letter-spacing: 0;
+      text-transform: none;
+      color: var(--muted-2);
+    }
+
+    .player-screen {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 265px;
+      overflow: hidden;
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 23% 28%, rgba(37, 244, 238, 0.64), transparent 38%),
+        radial-gradient(circle at 78% 70%, rgba(255, 55, 95, 0.58), transparent 42%),
+        radial-gradient(circle at 54% 46%, rgba(139, 124, 255, 0.56), transparent 48%),
+        #0b0b14;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    }
+
+    .player-grid {
+      position: absolute;
+      inset: 0;
+      opacity: 0.16;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.28) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.28) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: radial-gradient(circle at 50% 50%, #000 10%, transparent 72%);
+      -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 10%, transparent 72%);
+    }
+
+    .player-scan {
+      position: absolute;
+      inset: -35% 0 auto;
+      height: 38%;
+      z-index: 1;
+      background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+      mix-blend-mode: screen;
+      animation: player-scan 3.4s linear infinite;
+      pointer-events: none;
+    }
+
+    .player-glitch {
+      position: relative;
+      z-index: 2;
+      font-family: var(--font-display);
+      font-size: clamp(5.6rem, 8vw, 8.2rem);
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: -0.09em;
+      color: rgba(255, 255, 255, 0.95);
+      text-shadow: 0 0 45px rgba(37, 244, 238, 0.28);
+      animation: player-glitch-main 5.2s steps(1) infinite;
+    }
+
+    .player-glitch::before,
+    .player-glitch::after {
+      content: attr(data-text);
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+    }
+
+    .player-glitch::before {
+      color: #25f4ee;
+      opacity: 0.72;
+      transform: translate(-3px, 0);
+      clip-path: inset(10% 0 57% 0);
+      animation: player-glitch-top 5.2s steps(1) infinite;
+    }
+
+    .player-glitch::after {
+      color: #ff375f;
+      opacity: 0.68;
+      transform: translate(3px, 0);
+      clip-path: inset(57% 0 10% 0);
+      animation: player-glitch-bottom 5.2s steps(1) infinite;
+    }
+
+    .player-badge {
+      position: absolute;
+      left: 14px;
+      bottom: 13px;
+      z-index: 3;
+      color: rgba(255, 255, 255, 0.54);
+      font-family: var(--mono);
+      font-size: 0.54rem;
+      letter-spacing: 0.16em;
+    }
+
+    .player-time {
+      position: absolute;
+      right: 14px;
+      bottom: 13px;
+      z-index: 3;
+      color: rgba(255, 255, 255, 0.48);
+      font-family: var(--mono);
+      font-size: 0.58rem;
+    }
+
+    .player-timeline {
+      padding: 15px 3px 0;
+    }
+
+    .timeline-track {
+      position: relative;
+      display: block;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(23, 20, 29, 0.08);
+    }
+
+    .timeline-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 38%;
+      border-radius: 999px 0 0 999px;
+      background: var(--grad);
+    }
+
+    .timeline-gap {
+      position: absolute;
+      left: 38%;
+      top: 0;
+      width: 24%;
+      height: 100%;
+      background: repeating-linear-gradient(135deg, rgba(217, 45, 78, 0.3) 0 4px, rgba(217, 45, 78, 0.06) 4px 8px);
+    }
+
+    .timeline-head {
+      position: absolute;
+      left: 40%;
+      top: 50%;
+      width: 13px;
+      height: 13px;
+      border: 2px solid var(--pink);
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(217, 45, 78, 0.12);
+      transform: translate(-50%, -50%);
+      animation: player-playhead 4.8s ease-in-out infinite alternate;
+    }
+
+    .timeline-labels {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      margin-top: 6px;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 0.5rem;
+      letter-spacing: 0.14em;
+    }
+
+    .timeline-labels span:nth-child(2) {
+      color: var(--pink);
+      text-align: center;
+    }
+
+    .timeline-labels span:last-child {
+      text-align: right;
+    }
+
+    .player-footer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 13px;
+      padding: 12px 2px 1px;
+      border-top: 1px solid var(--line);
+    }
+
+    .player-play {
+      display: grid;
+      place-items: center;
+      width: 29px;
+      height: 29px;
+      flex: none;
+      border-radius: 50%;
+      background: var(--grad);
+      color: #08080c;
+      box-shadow: 0 8px 18px -10px rgba(101, 84, 232, 0.7);
+    }
+
+    .player-play .icon {
+      width: 13px;
+      height: 13px;
+      margin-left: 1px;
+    }
+
+    .player-wave {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      flex: 1;
+      height: 20px;
+      overflow: hidden;
+    }
+
+    .player-wave i {
+      width: 2px;
+      height: 14px;
+      flex: none;
+      border-radius: 2px;
+      background: var(--violet);
+      opacity: 0.45;
+      transform: scaleY(var(--h, 0.5));
+      animation: player-wave 1.35s var(--i, 0ms) ease-in-out infinite alternate;
+    }
+
+    .player-duration {
+      flex: none;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 0.54rem;
+    }
+
+    .error-float {
+      position: absolute;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 14px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 24px 55px -30px rgba(47, 35, 80, 0.55);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .error-float--top {
+      top: -46px;
+      right: -14px;
+      animation: error-chip-float 6.4s -0.8s ease-in-out infinite;
+    }
+
+    .error-float-icon {
+      display: grid;
+      place-items: center;
+      width: 31px;
+      height: 31px;
+      flex: none;
+      border-radius: 10px;
+      background: rgba(217, 45, 78, 0.1);
+      color: var(--pink);
+    }
+
+    .error-float-icon--cyan {
+      background: rgba(11, 143, 138, 0.1);
+      color: var(--cyan);
+    }
+
+    .error-float-icon .icon {
+      width: 15px;
+      height: 15px;
+    }
+
+    .error-float strong,
+    .error-float small {
+      display: block;
+    }
+
+    .error-float strong {
+      font-size: 0.69rem;
+      font-weight: 750;
+      letter-spacing: -0.01em;
+      color: var(--text-soft);
+    }
+
+    .error-float small {
+      margin-top: 1px;
+      font-size: 0.6rem;
+      font-weight: 550;
+      color: var(--muted-2);
+    }
+
+    .error-footer {
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 20px clamp(18px, 4vw, 40px) 30px;
+      border-top: 1px solid var(--line);
+      animation: error-rise 700ms 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    .error-footer-inner {
+      display: flex;
+      align-items: center;
+      gap: 10px 18px;
+      color: var(--muted-2);
+      font-size: 0.72rem;
+    }
+
+    .error-footer-inner p {
+      margin: 0;
+    }
+
+    .error-footer-inner a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: auto;
+      color: var(--text-soft);
+      font-weight: 650;
+      transition: color 160ms ease;
+    }
+
+    .error-footer-inner a:hover {
+      color: var(--violet);
+    }
+
+    .error-footer-inner a .icon {
+      width: 13px;
+      height: 13px;
+    }
+
+    /* Responsive -------------------------------------------------------- */
+
+    @media (max-width: 1080px) {
+      .error-main {
+        grid-template-columns: minmax(0, 1fr) minmax(330px, 0.82fr);
+        gap: 34px;
+      }
+
+      .error-float--top {
+        right: -8px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .error-main {
+        grid-template-columns: 1fr;
+        gap: 38px;
+        padding-top: 18px;
+        padding-bottom: 46px;
+      }
+
+      .error-copy {
+        max-width: 640px;
+      }
+
+      .error-visual {
+        min-height: 430px;
+        padding-top: 0;
+      }
+
+      .error-watermark {
+        top: -40px;
+        right: 4%;
+      }
+
+      .error-player-wrap {
+        width: min(100%, 390px);
+      }
+
+      .error-float {
+        display: none;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .error-header {
+        padding-top: 18px;
+        padding-bottom: 18px;
+      }
+
+      .error-header-home span {
+        display: none;
+      }
+
+      .error-header-home {
+        width: 38px;
+        height: 38px;
+        padding: 0;
+        justify-content: center;
+      }
+
+      .error-main {
+        padding-top: 8px;
+        padding-bottom: 38px;
+        gap: 30px;
+      }
+
+      .error-copy h1 {
+        font-size: clamp(2.9rem, 12vw, 3.8rem);
+      }
+
+      .error-lead {
+        margin-top: 20px;
+      }
+
+      .error-actions {
+        margin-top: 24px;
+      }
+
+      .error-actions .btn {
+        flex: 1 1 100%;
+      }
+
+      .error-route {
+        width: 100%;
+        margin-top: 22px;
+      }
+
+      .error-links {
+        margin-top: 22px;
+        gap: 8px 13px;
+      }
+
+      .error-links > span {
+        flex: 1 1 100%;
+      }
+
+      .error-visual {
+        min-height: 350px;
+        padding-bottom: 8px;
+      }
+
+      .error-watermark {
+        top: -25px;
+        right: -8px;
+        font-size: 11rem;
+        opacity: 0.8;
+      }
+
+      .error-player-wrap {
+        width: min(100%, 330px);
+      }
+
+      .error-player {
+        padding: 12px;
+        border-radius: 23px;
+        transform: none;
+      }
+
+      .player-screen {
+        min-height: 205px;
+      }
+
+      .player-glitch {
+        font-size: 5.7rem;
+      }
+
+      .error-footer {
+        padding-top: 17px;
+        padding-bottom: 22px;
+      }
+
+      .error-footer-inner {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 6px 14px;
+      }
+
+      .error-footer-inner a {
+        flex: 1 1 100%;
+        margin-left: 0;
+        margin-top: 5px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .error-copy h1 {
+        font-size: 2.65rem;
+      }
+
+      .error-route {
+        font-size: 0.61rem;
+      }
+
+      .error-visual {
+        min-height: 320px;
+      }
+
+      .error-player-wrap {
+        width: min(100%, 300px);
+      }
+
+      .player-screen {
+        min-height: 185px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .error-orb,
+      .error-player,
+      .error-float,
+      .player-dot,
+      .player-scan,
+      .player-glitch,
+      .player-glitch::before,
+      .player-glitch::after,
+      .timeline-head,
+      .player-wave i {
+        animation: none !important;
+      }
+
+      .error-header,
+      .error-copy,
+      .error-visual,
+      .error-footer {
+        animation: none !important;
+      }
+
+      .error-player {
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body class="error-page">
+  <a class="error-skip" href="#konten">Lewati ke konten</a>
+
+  <div class="error-bg" aria-hidden="true">
+    <span class="error-orb error-orb--cyan"></span>
+    <span class="error-orb error-orb--pink"></span>
+    <span class="error-orb error-orb--violet"></span>
+  </div>
+
+  <header class="error-header">
+    <a class="brand" href="/tiktok-hd/" aria-label="KoRifCan, kembali ke beranda">
+      <span class="brand-mark">
+        <svg class="icon" viewBox="0 0 40 40" aria-hidden="true">
+          <defs>
+            <linearGradient id="errorMark" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#25f4ee"></stop>
+              <stop offset=".52" stop-color="#8b7cff"></stop>
+              <stop offset="1" stop-color="#ff375f"></stop>
+            </linearGradient>
+          </defs>
+          <rect width="40" height="40" rx="12" fill="url(#errorMark)"></rect>
+          <path d="M13 11v18M13 20.2l10.6-8.7M13 20.2l10.6 8.7" fill="none" stroke="#08080c" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"></path>
+          <circle cx="28.4" cy="11.6" r="2.8" fill="#08080c"></circle>
+        </svg>
+      </span>
+      <span class="brand-name">KoRifCan<span class="brand-dot">.</span></span>
+    </a>
+
+    <a class="error-header-home" href="/tiktok-hd/" aria-label="Kembali ke beranda">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m4 11 8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1v-8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+      <span>Beranda</span>
+    </a>
+  </header>
+
+  <main class="error-main" id="konten">
+    <section class="error-copy" aria-labelledby="error-title">
+      <div class="eyebrow"><span class="eyebrow-dot"></span> Error 404 · frame not found</div>
+      <h1 id="error-title">Halaman ini<br><span class="text-grad">tidak ada di timeline.</span></h1>
+      <p class="error-lead">Link yang kamu buka mungkin sudah dipindah, salah ketik, atau belum pernah ada. Tidak ada video yang hilang—ini cuma halaman yang salah alamat.</p>
+
+      <div class="error-actions">
+        <a class="btn btn-primary" href="/tiktok-hd/#studio">
+          <span>Kembali ke Studio</span>
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        </a>
+        <a class="btn btn-ghost" href="/tiktok-hd/#cek-tiktok">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 10.5v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg>
+          <span>Cek video TikTok</span>
+        </a>
+      </div>
+
+      <div class="error-route" aria-label="Rute yang diminta">
+        <span class="error-route-dot" aria-hidden="true"></span>
+        <code id="errorPath">/tiktok-hd/...</code>
+      </div>
+
+      <nav class="error-links" aria-label="Tautan bantuan">
+        <span>Mungkin kamu mencari:</span>
+        <a href="/tiktok-hd/#cara-kerja">Cara kerja</a>
+        <a href="/tiktok-hd/#resep">Resep</a>
+        <a href="/tiktok-hd/#faq">FAQ</a>
+        <a href="/tiktok-hd/#cek-tiktok">Cek TikTok</a>
+      </nav>
+    </section>
+
+    <section class="error-visual" aria-hidden="true">
+      <span class="error-watermark">404</span>
+      <div class="error-glow"></div>
+
+      <div class="error-player-wrap">
+        <div class="error-player">
+          <div class="player-top">
+            <span class="player-status"><span class="player-dot"></span> Signal lost</span>
+            <span class="player-file">frame_404.mp4</span>
+          </div>
+
+          <div class="player-screen">
+            <span class="player-grid"></span>
+            <span class="player-scan"></span>
+            <span class="player-glitch" data-text="404">404</span>
+            <span class="player-badge">FRAME NOT FOUND</span>
+            <span class="player-time">00:00:00</span>
+          </div>
+
+          <div class="player-timeline">
+            <span class="timeline-track">
+              <span class="timeline-fill"></span>
+              <span class="timeline-gap"></span>
+              <span class="timeline-head"></span>
+            </span>
+            <span class="timeline-labels"><span>IN</span><span>MISSING</span><span>OUT</span></span>
+          </div>
+
+          <div class="player-footer">
+            <span class="player-play">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7.5v9l7.5-4.5L9 7.5Z" fill="currentColor"></path></svg>
+            </span>
+            <span class="player-wave">
+              <i style="--h:.4;--i:-0ms"></i><i style="--h:.75;--i:-90ms"></i><i style="--h:.55;--i:-180ms"></i><i style="--h:1;--i:-270ms"></i><i style="--h:.62;--i:-360ms"></i><i style="--h:.86;--i:-450ms"></i><i style="--h:.48;--i:-540ms"></i><i style="--h:.72;--i:-630ms"></i><i style="--h:.94;--i:-720ms"></i><i style="--h:.52;--i:-810ms"></i><i style="--h:.66;--i:-900ms"></i><i style="--h:.38;--i:-990ms"></i>
+            </span>
+            <span class="player-duration">0:00 / 0:00</span>
+          </div>
+        </div>
+
+        <div class="error-float error-float--top">
+          <span class="error-float-icon">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v5M12 16.5v.1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path><path d="M10.3 4.2 2.9 17a2 2 0 0 0 1.7 3h14.8a2 2 0 0 0 1.7-3L13.7 4.2a2 2 0 0 0-3.4 0Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path></svg>
+          </span>
+          <span><strong>Frame hilang</strong><small>tidak ada di timeline</small></span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="error-footer">
+    <div class="error-footer-inner">
+      <p>© <span id="year">2026</span> KoRifCan</p>
+      <p>Bukan layanan resmi TikTok.</p>
+      <a href="/tiktok-hd/">Kembali ke beranda <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></a>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var path = location.pathname + location.search + location.hash;
+      var pathEl = document.getElementById('errorPath');
+      if (pathEl) {
+        pathEl.textContent = path || '/tiktok-hd/';
+        pathEl.title = path;
+      }
+      var yearEl = document.getElementById('year');
+      if (yearEl) yearEl.textContent = String(new Date().getFullYear());
+    })();
+  </script>
+</body>
+</html>

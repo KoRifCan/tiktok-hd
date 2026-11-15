@@ -189,6 +189,7 @@ sidik jari. Semua atom iTunes branding, termasuk `cprt`, berisi `KoRifCan`.
 
 ```
 index.html          Halaman utama (upload prep + cek/download TikTok)
+404.html            Halaman error kustom (animasi, tanpa dependensi tambahan)
 style.css           Desain dan layout
 tiktok-stats.css    Gaya cek statistik di halaman utama
 app.js              UI, alur proses, ffmpeg.wasm
@@ -238,6 +239,23 @@ repo root domain jika ingin `robots.txt` berlaku otomatis.
 
 Jika situs pindah domain, ganti URL absolut di `index.html`, `robots.txt`, dan
 `sitemap.xml`, lalu buat ulang `og-image.png` karena footer kartu memuat URL situs.
+
+## Halaman error
+
+`404.html` menggantikan tampilan 404 default GitHub Pages. Halaman memakai token
+warna, font, dan tombol dari `style.css`, ditambah visual pemutar video
+"signal lost" dengan angka 404 glitch, timeline, scanline, dan animasi masuk.
+Semua animasi dimatikan otomatis saat pengguna mengaktifkan
+`prefers-reduced-motion`.
+
+Halaman ini memakai `noindex,follow`, menampilkan rute yang diminta, dan
+memakai path absolut `/tiktok-hd/` agar aset serta tautan tetap benar meskipun
+URL yang hilang berada di kedalaman berbeda.
+
+GitHub Pages hanya memakai `404.html` di root repo untuk status 404. Error lain
+seperti 403, 500, dan 502 tetap halaman platform dan tidak bisa diganti dari
+repo ini. Jika situs pindah ke domain sendiri, sesuaikan path `/tiktok-hd/` di
+`404.html`.
 
 ## Menjalankan lokal
 
