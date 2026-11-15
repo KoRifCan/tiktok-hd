@@ -230,6 +230,12 @@ canonical, `og:url`, `og:image`, dan sitemap. Metadata yang tersedia:
 - JSON-LD `WebSite`, `Person`, `SoftwareApplication`, dan `FAQPage`.
 - `robots.txt`, `sitemap.xml`, `apple-touch-icon.png`, dan manifest ikon Android.
 
+Karena situs ini adalah GitHub Pages project site di subpath `/tiktok-hd/`,
+crawler hanya otomatis membaca `robots.txt` di root domain
+(`https://korifcan.github.io/robots.txt`), bukan `robots.txt` di subpath ini.
+Kirim `sitemap.xml` lewat Google Search Console, atau salin aturan yang sama ke
+repo root domain jika ingin `robots.txt` berlaku otomatis.
+
 Jika situs pindah domain, ganti URL absolut di `index.html`, `robots.txt`, dan
 `sitemap.xml`, lalu buat ulang `og-image.png` karena footer kartu memuat URL situs.
 
